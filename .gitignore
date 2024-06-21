@@ -1,6 +1,3 @@
 node_modules
 .env
 /data
-/.nova/*
-!/.nova/Artwork
-!/.nova/Configuration.json
