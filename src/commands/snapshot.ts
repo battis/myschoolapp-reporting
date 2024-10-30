@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import cli from '@battis/qui-cli';
 import login from '../actions/login.js';
 import openURL from '../actions/openURL.js';
