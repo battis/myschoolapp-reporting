@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["dom"],
     "outDir": "./dist",
+    "module": "nodenext",
     "resolveJsonModule": true
   },
   "include": ["./src"]
