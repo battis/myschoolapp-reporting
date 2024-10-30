@@ -7,6 +7,10 @@ import flags from './flags.json' with { type: 'json' };
 import options from './options.json' with { type: 'json' };
 import captureBulletinBoard from './snapshot/BulletinBoard.js';
 
+type Snapshot = {
+  BulletinBoard?: Awaited<ReturnType<typeof captureBulletinBoard>>;
+};
+
 (async () => {
   let {
     positionals: [url],
@@ -52,6 +56,11 @@ import captureBulletinBoard from './snapshot/BulletinBoard.js';
         expired: {
           description: `Show expired items (default: ${cli.colors.value('false')})`,
           default: false
+        },
+        bulletinBoard: {
+          description: `Include the course Bulletin Board in the snap shot (default ${cli.colors.value('true')})`,
+          short: 'b',
+          default: true
         }
       }
     }
@@ -73,11 +82,12 @@ import captureBulletinBoard from './snapshot/BulletinBoard.js';
       future,
       expired,
       fromDate,
-      toDate
+      toDate,
+      bulletinBoard
     } = values;
 
     const page = await openURL(url, {
-      headless: !!headless,
+      headless: !!(headless && values.username && values.password),
       defaultViewport: {
         width: parseInt(viewportWidth),
         height: parseInt(viewportHeight)
@@ -86,21 +96,24 @@ import captureBulletinBoard from './snapshot/BulletinBoard.js';
     await login(page, values);
     values = {}; // remove login credentials
 
-    const bulletinBoard = await captureBulletinBoard(
-      page,
-      groupId,
-      new URLSearchParams({
-        format,
-        contextLabelId,
-        editMode,
-        active,
-        future,
-        expired,
-        fromDate,
-        toDate
-      })
-    );
-    cli.log.info(JSON.stringify(bulletinBoard, null, 2));
+    const snapshot: Snapshot = {};
+    if (bulletinBoard) {
+      snapshot.BulletinBoard = await captureBulletinBoard(
+        page,
+        groupId,
+        new URLSearchParams({
+          format,
+          contextLabelId,
+          editMode,
+          active,
+          future,
+          expired,
+          fromDate,
+          toDate
+        })
+      );
+    }
+    cli.log.info(JSON.stringify(snapshot, null, 2));
   } else {
     spinner.fail(
       'No group ID detected in URL positional argument (try using the URL of a course bulletin board page)'
