@@ -1,0 +1,9 @@
+{
+  "actions" : {
+    "run" : {
+      "enabled" : true,
+      "script" : "source .env\ntsx .\/src\/commands\/snapshot.ts -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --no-headless \"$URL\""
+    }
+  },
+  "openLogOnRun" : "start"
+}

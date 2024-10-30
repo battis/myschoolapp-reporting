@@ -1,10 +1,8 @@
-#!/usr/bin/env -S npx tsx
-
 import cli from '@battis/qui-cli';
-import login from '../actions/login';
-import openURL from '../actions/openURL';
-import flags from './flags.json';
-import options from './options.json';
+import login from '../actions/login.js';
+import openURL from '../actions/openURL.js';
+import flags from './flags.json' with { type: 'json' };
+import options from './options.json' with { type: 'json' };
 
 namespace DataDirect {
   export type ContentType = {
