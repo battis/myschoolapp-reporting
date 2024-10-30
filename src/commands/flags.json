@@ -1,0 +1,6 @@
+{
+  "headless": {
+    "description": "Run Puppeteer's Chrome instance headless (default: \u001b[36mtrue\u001b[0m)",
+    "default": true
+  }
+}

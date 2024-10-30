@@ -1,15 +1,23 @@
 {
-  "name": "mygroton-reporting",
-  "version": "1.0.0",
-  "main": "index.js",
-  "author": "Seth Battis <sbattis@groton.org>",
+  "name": "myschoolapp-reporting",
+  "version": "0.0.0",
   "license": "GPL-3.0",
+  "author": {
+    "name": "Seth Battis",
+    "email": "seth@battis.net"
+  },
+  "prettier": "@battis/prettier-config",
+  "eslintConfig": {
+    "extends": "@battis/eslint-config"
+  },
   "dependencies": {
-    "dotenv": "^10.0.0",
-    "puppeteer": "^13.7.0"
+    "@battis/qui-cli": "^0.4.2",
+    "puppeteer": "^23.6.0"
   },
   "devDependencies": {
-    "@types/puppeteer": "^5.4.7",
-    "typescript": "^4.9.5"
+    "@battis/eslint-config": "latest",
+    "@battis/prettier-config": "latest",
+    "@tsconfig/node20": "^20.1.4",
+    "tsx": "^4.19.1"
   }
 }

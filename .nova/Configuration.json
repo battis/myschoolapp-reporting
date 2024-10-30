@@ -1,4 +1,5 @@
 {
+  "prettier.module.path" : "\/Users\/sbattis\/Documents\/GitHub\/myschoolapp-reporting\/node_modules\/prettier",
   "workspace.art_style" : 1,
   "workspace.color" : 2,
   "workspace.name" : "myschoolapp-reporting"
