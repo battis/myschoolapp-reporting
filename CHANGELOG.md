@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.1.2
+
+### Patch Changes
+
+- e5b4780: fix ignores
+
 ## 0.1.1
 
 ### Patch Changes
