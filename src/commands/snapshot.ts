@@ -77,14 +77,13 @@ import captureSnapshot from './snapshot/Snapshot.js';
   let data;
 
   if (all) {
-    const associations = association.split(',').map((t) => t.trim());
-    const terms = termsOffered.split(',').map((t) => t.trim());
+    const _assoc = (association || '').split(',').map((t) => t.trim());
+    const _terms = (termsOffered || '').split(',').map((t) => t.trim());
     const groups = (await allGroups(page)).filter(
       (group) =>
-        (associations.length == 0 ||
-          associations.includes(group.association)) &&
-        (termsOffered.length == 0 ||
-          terms.reduce(
+        (association === undefined || _assoc.includes(group.association)) &&
+        (termsOffered === undefined ||
+          _terms.reduce(
             (match, term) => match && group.terms_offered.includes(term),
             true
           ))
