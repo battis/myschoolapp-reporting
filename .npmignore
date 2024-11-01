@@ -1,4 +1,5 @@
 .*
-/src/
+/pnpm-lock.yaml
 /tsconfig.json
+/src/
 /var/
