@@ -4,7 +4,11 @@
     "lib": ["dom"],
     "outDir": "./dist",
     "module": "nodenext",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "common/*": ["./src/common/*"],
+      "Blackbaud/*": ["./src/Blackbaud/*"]
+    }
   },
   "include": ["./src"]
 }

@@ -12,7 +12,7 @@ export default async function login(
   { username, password, sso }: LoginOptions = {}
 ) {
   const spinner = cli.spinner();
-  spinner.start('Waiting for interactive login to complete');
+  spinner.start('Waiting for login to complete');
 
   if (username) {
     // Blackbaud username entry
@@ -39,5 +39,5 @@ export default async function login(
   }
 
   await page.waitForSelector('div#site-header', { timeout: 300000 });
-  spinner.succeed('Interactive login complete');
+  spinner.succeed('Login complete');
 }
