@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.1.3
+
+### Patch Changes
+
+- c3f2ab0: package info
+
 ## 0.1.2
 
 ### Patch Changes
