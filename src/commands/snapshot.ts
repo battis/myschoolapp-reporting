@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import cli from '@battis/qui-cli';
-import commonFlags from 'common/args/flags.js';
-import commonOptions from 'common/args/options.js';
-import humanize from 'common/humanize.js';
-import login from 'common/login.js';
-import openURL from 'common/openURL.js';
-import renewSession from 'common/renewSession.js';
-import writeJSON from 'common/writeJSON.js';
 import path from 'node:path';
+import commonFlags from '../common/args/flags.js';
+import commonOptions from '../common/args/options.js';
+import humanize from '../common/humanize.js';
+import login from '../common/login.js';
+import openURL from '../common/openURL.js';
+import renewSession from '../common/renewSession.js';
+import writeJSON from '../common/writeJSON.js';
 import flags from './snapshot/args/flags.js';
 import options from './snapshot/args/options.js';
 import allGroups from './snapshot/Groups.js';

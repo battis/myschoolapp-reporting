@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
-import * as DataDirect from 'Blackbaud/DataDirect.js';
 import { Page } from 'puppeteer';
+import * as DataDirect from '../../Blackbaud/DataDirect.js';
 
 export default async function allGroups(page: Page, year?: string) {
   const spinner = cli.spinner();

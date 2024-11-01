@@ -1,4 +1,4 @@
-import { DateString, NumericBoolean } from 'common/descriptiveTypes.js';
+import { DateString, NumericBoolean } from '../../common/descriptiveTypes.js';
 
 export type ContentItem = {
   AlbumDescription?: string | null;

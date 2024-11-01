@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
-import * as DataDirect from 'Blackbaud/DataDirect.js';
 import { Page } from 'puppeteer';
+import * as DataDirect from '../../Blackbaud/DataDirect.js';
 import { ApiError } from './ApiError.js';
 
 type Topic = DataDirect.SectionTopic & {
