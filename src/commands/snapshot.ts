@@ -3,6 +3,7 @@
 import cli from '@battis/qui-cli';
 import commonFlags from 'common/args/flags.js';
 import commonOptions from 'common/args/options.js';
+import humanize from 'common/humanize.js';
 import login from 'common/login.js';
 import openURL from 'common/openURL.js';
 import renewSession from 'common/renewSession.js';
@@ -32,7 +33,8 @@ import captureSnapshot from './snapshot/Snapshot.js';
   });
 
   let {
-    output,
+    outputPath,
+    groupsPath,
     association,
     termsOffered,
     format = 'json',
@@ -90,13 +92,26 @@ import captureSnapshot from './snapshot/Snapshot.js';
     );
     const spinner = cli.spinner();
     spinner.info(`${groups.length} groups match filters`);
+    if (groupsPath) {
+      writeJSON(groupsPath, groups, {
+        pretty,
+        name: 'groups'
+      });
+    }
 
-    writeJSON(path.join(process.cwd(), 'var/groups.json'), groups, {
-      pretty: true
-    });
     data = [];
     for (let i = 0; i < groups.length; i += batchSize) {
       const batch = groups.slice(i, i + batchSize);
+      const host = new URL(page.url()).host;
+      humanize(
+        page,
+        path.join(
+          `https://${host}`,
+          'app/faculty#academicclass',
+          batch[0].lead_pk.toString(),
+          '0/bulletinboard'
+        )
+      );
       data.push(
         ...(await Promise.all(
           batch.map((group) =>
@@ -121,7 +136,7 @@ import captureSnapshot from './snapshot/Snapshot.js';
     });
   }
 
-  writeJSON(output, data, { pretty });
+  writeJSON(outputPath, data, { pretty, name: 'snapshot' });
 
   if (quit) {
     await page.browser().close();

@@ -1,5 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
+import isReady from './isReady.js';
 
 type LoginOptions = {
   username?: string;
@@ -38,6 +39,6 @@ export default async function login(
     }
   }
 
-  await page.waitForSelector('div#site-header', { timeout: 300000 });
+  await isReady(page, 300000);
   spinner.succeed('Login complete');
 }

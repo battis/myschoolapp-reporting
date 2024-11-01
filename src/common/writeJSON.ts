@@ -10,12 +10,11 @@ export default function writeJSON(
   const spinner = cli.spinner();
   if (output) {
     spinner.start('Writing output to file');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    output = output.replace('%TIMESTAMP%', timestamp);
     let filePath = path.resolve(process.cwd(), output);
     if (path.extname(output).toLowerCase() == '') {
-      filePath = path.join(
-        filePath,
-        `${new Date().toISOString().replace(/[:.]/g, '-')}-${name}.json`
-      );
+      filePath = path.join(filePath, `${timestamp}-${name}.json`);
     } else {
       filePath = path.join(
         path.dirname(filePath),
@@ -24,7 +23,7 @@ export default function writeJSON(
       if (fs.existsSync(filePath)) {
         filePath = path.join(
           path.dirname(filePath),
-          `${path.basename(filePath, '.json')}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+          `${path.basename(filePath, '.json')}-${timestamp}.json`
         );
       }
     }

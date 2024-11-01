@@ -18,8 +18,8 @@ export default {
   viewportHeight: {
     default: '0'
   },
-  output: {
+  outputPath: {
     short: 'o',
-    description: 'Path to output file'
+    description: `Path to output directory or file to save command output (include placeholder ${cli.colors.quotedValue('"%TIMESTAMP%"')} to specify its location, otherwise it is added automatically when needed to avoid overwriting existing files)`
   }
 };
