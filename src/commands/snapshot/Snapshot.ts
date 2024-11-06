@@ -7,6 +7,7 @@ import captureTopics from './Topics.js';
 
 type Snapshot = {
   Timestamp: Date;
+  CapturedBy: EmailString;
   SectionInfo: Awaited<ReturnType<typeof captureSectionInfo>>;
   GroupId: string;
   BulletinBoard?: Awaited<ReturnType<typeof captureBulletinBoard>>;
@@ -43,6 +44,9 @@ export default async function captureSnapshot(
 
     const snapshot: Snapshot = {
       Timestamp: new Date(),
+      CapturedBy: await page.evaluate(
+        async () => (await BBAuthClient.BBAuth.getDecodedToken()).email
+      ),
       GroupId: groupId,
       SectionInfo,
       BulletinBoard,

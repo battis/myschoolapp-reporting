@@ -1,9 +1,3 @@
-import {
-  DateString,
-  NumericBoolean,
-  NumericTimestamp
-} from '../../common/descriptiveTypes.js';
-
 export type SectionTopic = {
   AllowCopy: boolean;
   AllowEdit: boolean;

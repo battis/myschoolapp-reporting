@@ -1,7 +1,19 @@
+type DecodedToken = {
+  sub: UUIDString;
+  email: EmailString;
+  given_name: string;
+  family_name: string;
+  '1bb.session_id': string;
+  exp: NumericTimestamp;
+  iat: NumericTimestamp;
+  iss: URLString;
+  aud: string;
+};
+
 declare const BBAuthClient: {
   BBAuth: {
     getUrl: (_: any, _: any) => any;
-    getDecodedToken: (_: any) => any;
+    getDecodedToken: (_: any) => Promise<DecodedToken>;
     getToken: (_: any) => any;
     getTTL: () => any;
     renewSession: () => any;

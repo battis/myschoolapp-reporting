@@ -29,11 +29,11 @@
     "extends": "@battis/eslint-config"
   },
   "dependencies": {
-    "@battis/qui-cli": "^0.6.0",
+    "@battis/qui-cli": "^0.6.2",
     "express": "^4.21.1",
     "expressionparser": "^1.1.5",
     "open": "^10.1.0",
-    "puppeteer": "^23.6.1"
+    "puppeteer": "^23.7.0"
   },
   "devDependencies": {
     "@battis/eslint-config": "latest",

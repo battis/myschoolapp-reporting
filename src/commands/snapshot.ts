@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
 import cli from '@battis/qui-cli';
+import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import commonFlags from '../common/args/flags.js';
 import commonOptions from '../common/args/options.js';
 import humanize from '../common/humanize.js';
 import login from '../common/login.js';
 import openURL from '../common/openURL.js';
-import renewSession from '../common/renewSession.js';
+import { renewSession, stopRenewingSession } from '../common/renewSession.js';
 import writeJSON from '../common/writeJSON.js';
 import flags from './snapshot/args/flags.js';
 import options from './snapshot/args/options.js';
@@ -79,6 +81,7 @@ import captureSnapshot from './snapshot/Snapshot.js';
   let data;
 
   if (all) {
+    const session = crypto.randomUUID();
     const _assoc = (association || '').split(',').map((t) => t.trim());
     const _terms = (termsOffered || '').split(',').map((t) => t.trim());
     const groups = (await allGroups(page)).filter(
@@ -100,6 +103,11 @@ import captureSnapshot from './snapshot/Snapshot.js';
     }
 
     data = [];
+    await fs.mkdir(`/tmp/snapshot/${session}`, { recursive: true });
+    const zeros = new Array((groups.length + '').length).fill(0).join('');
+    function pad(n: number) {
+      return (zeros + n).slice(-zeros.length);
+    }
     for (let i = 0; i < groups.length; i += batchSize) {
       const batch = groups.slice(i, i + batchSize);
       const host = new URL(page.url()).host;
@@ -112,22 +120,34 @@ import captureSnapshot from './snapshot/Snapshot.js';
           '0/bulletinboard'
         )
       );
-      data.push(
-        ...(await Promise.all(
-          batch.map((group) =>
-            captureSnapshot(page, {
-              groupId: group.lead_pk.toString(),
-              bulletinBoard,
-              topics,
-              gradebook,
-              params
-            })
-          )
-        ))
+      await Promise.allSettled(
+        batch.map(async (group, n) => {
+          const snapshot = await captureSnapshot(page, {
+            groupId: group.lead_pk.toString(),
+            bulletinBoard,
+            topics,
+            gradebook,
+            params
+          });
+          await fs.writeFile(
+            `/tmp/snapshot/${session}/${pad(i + n)}.json`,
+            JSON.stringify(snapshot)
+          );
+        })
       );
     }
+    stopRenewingSession();
+    const partials = await fs.readdir(`/tmp/snapshot/${session}`);
+    for (const partial of partials) {
+      data.push(
+        JSON.parse(
+          (await fs.readFile(`/tmp/snapshot/${session}/${partial}`)).toString()
+        )
+      );
+    }
+    await fs.rmdir(`/tmp/snapshot`, { recursive: true });
   } else {
-    data = captureSnapshot(page, {
+    data = await captureSnapshot(page, {
       url,
       bulletinBoard,
       topics,
@@ -136,6 +156,7 @@ import captureSnapshot from './snapshot/Snapshot.js';
     });
   }
 
+  cli.log.debug(outputPath);
   writeJSON(outputPath, data, { pretty, name: 'snapshot' });
 
   if (quit) {

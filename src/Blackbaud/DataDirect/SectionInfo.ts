@@ -1,9 +1,3 @@
-import {
-  DateString,
-  NumericBoolean,
-  NumericTimestamp
-} from '../../common/descriptiveTypes.js';
-
 export type SectionInfo = {
   AssociationId: number;
   Block: string;
