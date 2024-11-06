@@ -1,0 +1,9 @@
+{
+  "actions" : {
+    "run" : {
+      "enabled" : true,
+      "script" : "source .env\ntsx .\/src\/commands\/export.ts -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath \".\/var\/$(date \"+%Y-%m-%dT%H-%M-%S%z\")-export\" --pretty \"$URL\""
+    }
+  },
+  "openLogOnRun" : "start"
+}

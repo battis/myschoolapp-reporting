@@ -18,15 +18,22 @@ type Snapshot = {
 type SnapshotOptions = {
   url?: string;
   groupId?: string;
-  bulletinBoard: boolean;
-  topics: boolean;
-  gradebook: boolean;
-  params: URLSearchParams;
+  bulletinBoard?: boolean;
+  topics?: boolean;
+  gradebook?: boolean;
+  params?: URLSearchParams;
 };
 
 export default async function captureSnapshot(
   page: Page,
-  { url, groupId, bulletinBoard, topics, gradebook, params }: SnapshotOptions
+  {
+    url,
+    groupId,
+    bulletinBoard = true,
+    topics = true,
+    gradebook = true,
+    params = new URLSearchParams()
+  }: SnapshotOptions
 ) {
   const spinner = cli.spinner();
   spinner.start('Identifying section');
@@ -45,7 +52,7 @@ export default async function captureSnapshot(
     const snapshot: Snapshot = {
       Timestamp: new Date(),
       CapturedBy: await page.evaluate(
-        async () => (await BBAuthClient.BBAuth.getDecodedToken()).email
+        async () => (await BBAuthClient.BBAuth.getDecodedToken(null)).email
       ),
       GroupId: groupId,
       SectionInfo,

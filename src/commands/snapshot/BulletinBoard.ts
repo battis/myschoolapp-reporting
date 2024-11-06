@@ -4,7 +4,7 @@ import * as DataDirect from '../../Blackbaud/DataDirect.js';
 import { ApiError } from './ApiError.js';
 
 type BulletinBoard = (DataDirect.BulletinBoardContent & {
-  Content?: any;
+  Content?: DataDirect.ContentItem | DataDirect.ContentItem[];
   ContentType?: DataDirect.ContentType;
 })[];
 

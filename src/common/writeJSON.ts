@@ -28,6 +28,7 @@ export default function writeJSON(
           );
         }
       }
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(
         filePath,
         pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)

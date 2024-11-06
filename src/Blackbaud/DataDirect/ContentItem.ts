@@ -11,6 +11,7 @@ export type ContentItem = {
   ExpireDate?: DateString | null;
   FileEdited?: string | null;
   FileName?: string | null;
+  FilenameUrl?: string;
   FilePath?: string | null;
   FilesInProcessing: number;
   FilesProcessed: number;

@@ -145,7 +145,7 @@ import captureSnapshot from './snapshot/Snapshot.js';
         )
       );
     }
-    await fs.rmdir(`/tmp/snapshot`, { recursive: true });
+    await fs.rm(`/tmp/snapshot`, { recursive: true });
   } else {
     data = await captureSnapshot(page, {
       url,
@@ -156,10 +156,9 @@ import captureSnapshot from './snapshot/Snapshot.js';
     });
   }
 
-  cli.log.debug(outputPath);
-  writeJSON(outputPath, data, { pretty, name: 'snapshot' });
-
   if (quit) {
     await page.browser().close();
   }
+
+  writeJSON(outputPath, data, { pretty, name: 'snapshot' });
 })();

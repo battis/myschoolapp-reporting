@@ -11,6 +11,9 @@ importers:
       '@battis/qui-cli':
         specifier: ^0.6.2
         version: 0.6.2
+      '@battis/typescript-tricks':
+        specifier: ^0.6.1
+        version: 0.6.1
       express:
         specifier: ^4.21.1
         version: 4.21.1
@@ -133,6 +136,9 @@ packages:
   '@battis/qui-cli@0.6.2':
     resolution: {integrity: sha512-D+OUosgifEqVqptVuypuuezKp0jXSWfpaxVur4jQ5YEGAnaHzdpMSlMU/hF37Uvw+Eg/KzY8COWnEZLyPBmLRA==}
     engines: {node: '>=12.17'}
+
+  '@battis/typescript-tricks@0.6.1':
+    resolution: {integrity: sha512-vI87YZ7W1WEUeGxPl3Kwt2l3jigPSx5bb9Kvc/4DihZvN1m1PLYW7U+rG5N9nW9WAXWI/3JVgYANsbUmGAdjLA==}
 
   '@changesets/apply-release-plan@7.0.5':
     resolution: {integrity: sha512-1cWCk+ZshEkSVEZrm2fSj1Gz8sYvxgUL4Q78+1ZZqeqfuevPTPk033/yUZ3df8BKMohkqqHfzj0HOOrG0KtXTw==}
@@ -2841,6 +2847,8 @@ snapshots:
       shelljs: 0.8.5
       strip-ansi: 7.1.0
       winston: 3.16.0
+
+  '@battis/typescript-tricks@0.6.1': {}
 
   '@changesets/apply-release-plan@7.0.5':
     dependencies:
