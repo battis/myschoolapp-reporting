@@ -2,7 +2,7 @@ import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export default function writeJSON(
+export default async function writeJSON(
   outputPath: string | undefined,
   data: object | undefined,
   { pretty = false, name = 'output' } = {}

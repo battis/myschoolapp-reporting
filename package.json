@@ -35,7 +35,7 @@
     "express": "^4.21.1",
     "expressionparser": "^1.1.5",
     "open": "^10.1.0",
-    "puppeteer": "^23.7.0"
+    "puppeteer": "^23.7.1"
   },
   "devDependencies": {
     "@battis/eslint-config": "latest",
