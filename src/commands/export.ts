@@ -6,7 +6,7 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { ReadableStream } from 'node:stream/web';
-import * as DataDirect from '../Blackbaud/DataDirect.js';
+import * as api from '../Blackbaud/api.js';
 import commonFlags from '../common/args/flags.js';
 import commonOptions from '../common/args/options.js';
 import login from '../common/login.js';
@@ -96,7 +96,7 @@ import snapshotOptions from './snapshot/args/options.js';
         await Promise.allSettled(
           (snapshot[section]! as Array<any>).map(async (content, n) => {
             if (content.Content) {
-              let items: DataDirect.ContentItem[];
+              let items: api.DataDirect.ContentItem[];
               if (Array.isArray(content.Content)) {
                 items = content.Content;
               } else {

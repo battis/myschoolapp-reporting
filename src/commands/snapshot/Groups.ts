@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
-import * as DataDirect from '../../Blackbaud/DataDirect.js';
+import * as api from '../../Blackbaud/api.js';
 
 export default async function allGroups(page: Page, year?: string) {
   const spinner = cli.spinner();
@@ -13,7 +13,7 @@ export default async function allGroups(page: Page, year?: string) {
       year = `${now.getFullYear() - 1}%20-%20${now.getFullYear()}`;
     }
   }
-  const groups: DataDirect.Group[] = await page.evaluate(
+  const groups: api.DataDirect.Group[] = await page.evaluate(
     async (year: string) => {
       return await (
         await fetch(

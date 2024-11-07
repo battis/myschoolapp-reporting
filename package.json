@@ -13,6 +13,7 @@
   },
   "type": "module",
   "bin": {
+    "export": "./dist/commands/export.js",
     "snapshot": "./dist/commands/snapshot.js"
   },
   "scripts": {

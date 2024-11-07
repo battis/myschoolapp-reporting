@@ -1,12 +1,12 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
-import * as DataDirect from '../../Blackbaud/DataDirect.js';
+import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
 type Gradebook = {
   markingPeriods?: {
-    markingPeriod: DataDirect.MarkingPeriod;
-    gradebook: DataDirect.Gradebook;
+    markingPeriod: api.DataDirect.MarkingPeriod;
+    gradebook: api.DataDirect.Gradebook;
   }[];
 };
 
@@ -21,7 +21,7 @@ export default async function captureGradebook(
     const gradebook = await page.evaluate(
       async (groupId: string, params: string) => {
         const host = window.location.host;
-        const markingPeriods: DataDirect.MarkingPeriod[] = await (
+        const markingPeriods: api.DataDirect.MarkingPeriod[] = await (
           await fetch(
             `https://${host}/api/datadirect/GradeBookMarkingPeriodList?sectionId=${groupId}`
           )

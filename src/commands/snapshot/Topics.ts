@@ -1,12 +1,12 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
-import * as DataDirect from '../../Blackbaud/DataDirect.js';
+import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-type Topic = DataDirect.SectionTopic & {
-  Content?: (DataDirect.ContentItem & {
-    ObjectType?: DataDirect.ObjectType;
-    Content?: any;
+type Topic = api.DataDirect.SectionTopic & {
+  Content?: (api.DataDirect.ContentItem & {
+    ObjectType?: api.DataDirect.ObjectType;
+    Content?: any; // FIXME type
   })[];
 };
 
@@ -21,7 +21,7 @@ export default async function captureTopics(
     const topics = await page.evaluate(
       async (groupId: string, params: string) => {
         const host = window.location.host;
-        const possibleContent: DataDirect.ObjectType[] = await (
+        const possibleContent: api.DataDirect.ObjectType[] = await (
           await fetch(`https://${host}/api/DataDirect/TopicContentTypesGet`)
         ).json();
         const topics: Topic[] = await (

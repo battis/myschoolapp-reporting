@@ -1,11 +1,11 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
-import * as DataDirect from '../../Blackbaud/DataDirect.js';
+import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-type BulletinBoard = (DataDirect.BulletinBoardContent & {
-  Content?: DataDirect.ContentItem | DataDirect.ContentItem[];
-  ContentType?: DataDirect.ContentType;
+type BulletinBoard = (api.DataDirect.BulletinBoardContent & {
+  Content?: api.DataDirect.ContentItem | api.DataDirect.ContentItem[];
+  ContentType?: api.DataDirect.ContentType;
 })[];
 
 export default async function captureBulletinBoard(
@@ -19,7 +19,7 @@ export default async function captureBulletinBoard(
     const BulletinBoard = await page.evaluate(
       async (groupId: string, params: string | URLSearchParams) => {
         const host = window.location.host;
-        const possibleContent: DataDirect.ContentType[] = await (
+        const possibleContent: api.DataDirect.ContentType[] = await (
           await fetch(
             `https://${host}/api/datadirect/GroupPossibleContentGet/?format=json&leadSectionId=${groupId}`
           )
@@ -75,7 +75,7 @@ export default async function captureBulletinBoard(
               ).json();
             }
           } catch (error) {
-            item.Content = { error };
+            item.Content = { error } as unknown as api.DataDirect.ContentItem;
           }
         }
         return items;

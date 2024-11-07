@@ -1,5 +1,5 @@
 export type ApiError = {
-  error: any;
+  error: any; // FIXME type
 };
 
 export function isApiError(o: unknown): o is ApiError {
