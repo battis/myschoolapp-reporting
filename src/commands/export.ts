@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import cli from '@battis/qui-cli';
-import { Coerce } from '@battis/typescript-tricks';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
+import { ReadableStream } from 'node:stream/web';
 import * as DataDirect from '../Blackbaud/DataDirect.js';
 import commonFlags from '../common/args/flags.js';
 import commonOptions from '../common/args/options.js';
@@ -80,7 +80,7 @@ import snapshotOptions from './snapshot/args/options.js';
   });
 
   if (snapshot) {
-    const downloaded: string[] = [];
+    const downloaded: Record<string, string> = {};
 
     let section: keyof typeof snapshot;
     for (section of [
@@ -107,42 +107,61 @@ import snapshotOptions from './snapshot/args/options.js';
                   let key: keyof typeof item;
                   for (key of Object.keys(item) as (keyof typeof item)[]) {
                     if (/Url$/.test(key)) {
-                      if (item[key] && !downloaded.includes(item[key])) {
-                        downloaded.push(item[key]);
-                        const spinner = cli.spinner();
-                        const fetchUrl = `${/^https?:/.test(item[key]) ? '' : `https:${/^\/\//.test(item[key]) ? '' : `//${host}`}`}${item[key]}`;
-                        try {
-                          spinner.start(fetchUrl);
-                          const response = await fetch(fetchUrl);
-                          if (response.ok && response.body) {
-                            const localPath = new URL(
-                              item[key].replace(/^\/\/[^/]+\//, '')
-                            ).pathname;
-                            const streamPath = path.join(outputPath, localPath);
-                            if (!fs.existsSync(path.dirname(streamPath))) {
+                      if (item[key]) {
+                        if (downloaded[item[key]]) {
+                          (item as any)[`Local${key}`] = downloaded[item[key]];
+                        } else {
+                          const spinner = cli.spinner();
+                          let fetchUrl = item[key];
+                          if (fetchUrl.slice(0, 2) == '//') {
+                            fetchUrl = `https:${fetchUrl}`;
+                          } else if (fetchUrl.slice(0, 1) == '/') {
+                            fetchUrl = `https://${host}${fetchUrl}`;
+                          }
+                          if (/myschoolcdn\.com\/.+\/video\//.test(fetchUrl)) {
+                            fetchUrl = fetchUrl.replace(
+                              /(\/\d+)\/video\/video\d+_(\d+)\.(.+)/,
+                              '$1/$2/1/video.$3'
+                            );
+                          }
+                          try {
+                            spinner.start(fetchUrl);
+                            const response = await fetch(fetchUrl);
+                            if (response.ok && response.body) {
+                              let localPath = new URL(fetchUrl).pathname.slice(
+                                1
+                              );
+                              if (localPath == '') {
+                                localPath =
+                                  new URL(fetchUrl).hostname + '/index.html';
+                              }
+                              downloaded[item[key]] = localPath;
+                              const streamPath = path.resolve(
+                                process.cwd(),
+                                outputPath,
+                                localPath
+                              );
                               fs.mkdirSync(path.dirname(streamPath), {
                                 recursive: true
                               });
-                            }
-                            await finished(
-                              Readable.fromWeb(response.body).pipe(
-                                fs.createWriteStream(streamPath, {
-                                  flags: 'wx'
-                                })
-                              )
-                            );
+                              await finished(
+                                Readable.fromWeb(
+                                  response.body as ReadableStream<any>
+                                ).pipe(fs.createWriteStream(streamPath))
+                              );
 
-                            (item as any)[`Local${key}`] = localPath;
-                            spinner.succeed(
-                              `snapshot.${section}[${n}].Content[${m}].${key}: ${cli.colors.url(localPath)}`
+                              (item as any)[`Local${key}`] = localPath;
+                              spinner.succeed(
+                                `snapshot.${section}[${n}].Content[${m}].${key}: ${cli.colors.url(localPath)}`
+                              );
+                            } else {
+                              spinner.fail(item[key]);
+                            }
+                          } catch (e) {
+                            spinner.fail(
+                              `${cli.colors.error(`${JSON.stringify(e)}:`)} ${cli.colors.url(fetchUrl)}`
                             );
-                          } else {
-                            spinner.fail(item[key]);
                           }
-                        } catch (e) {
-                          spinner.fail(
-                            `${cli.colors.error(`${JSON.stringify(e)}:`)} ${cli.colors.url(fetchUrl)}`
-                          );
                         }
                       }
                     }
