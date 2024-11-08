@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@battis/qui-cli':
-        specifier: ^0.6.2
-        version: 0.6.2
+        specifier: ^0.6.3
+        version: 0.6.3
       '@battis/typescript-tricks':
         specifier: ^0.6.1
         version: 0.6.1
@@ -133,8 +133,8 @@ packages:
     resolution: {integrity: sha512-g+1W+5Tjmeo0U7vWu0JCl8EYsuUV8StaUSkby66bN6VzWv21HpZYtSzV4MgzLSiRvXEuKAGGUN98kh1MXSjwGQ==}
     engines: {node: '>=12.17'}
 
-  '@battis/qui-cli@0.6.2':
-    resolution: {integrity: sha512-D+OUosgifEqVqptVuypuuezKp0jXSWfpaxVur4jQ5YEGAnaHzdpMSlMU/hF37Uvw+Eg/KzY8COWnEZLyPBmLRA==}
+  '@battis/qui-cli@0.6.3':
+    resolution: {integrity: sha512-fdor3FhwHNuKK42vRLwW3YP8vQ+Ifw9pm1KSZ4a0V0pdAF1f4zesX4jfRX15SEKNI+NR/M1i3kbCiGSXHwnxzA==}
     engines: {node: '>=12.17'}
 
   '@battis/typescript-tricks@0.6.1':
@@ -2832,7 +2832,7 @@ snapshots:
       - typescript
       - vue-tsc
 
-  '@battis/qui-cli@0.6.2':
+  '@battis/qui-cli@0.6.3':
     dependencies:
       '@inquirer/prompts': 2.3.1
       '@tahul/is-valid-domain': 1.0.5

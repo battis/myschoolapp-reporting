@@ -7,14 +7,13 @@ import commonFlags from '../common/args/flags.js';
 import commonOptions from '../common/args/options.js';
 import login from '../common/login.js';
 import openURL from '../common/openURL.js';
-import pathsafeTimestamp from '../common/pathsafeTimestamp.js';
-import writeJSON from '../common/writeJSON.js';
+import { renewSession, stopRenewingSession } from '../common/renewSession.js';
 import flags from './export/args/flags.js';
 import options from './export/args/options.js';
-import download from './export/download.js';
+import parseArgs from './export/args/parse.js';
+import downloadSnapshot from './export/download.js';
 import { isApiError } from './snapshot/ApiError.js';
-import { captureSnapshot } from './snapshot/Snapshot.js';
-import parseArgs from './snapshot/args/parse.js';
+import { captureAllSnapshots, captureSnapshot } from './snapshot/Snapshot.js';
 
 (async () => {
   let {
@@ -31,6 +30,7 @@ import parseArgs from './snapshot/args/parse.js';
   const {
     puppeteerOptions,
     snapshotOptions,
+    downloadOptions,
     all,
     allOptions,
     outputOptions: { outputPath: op, pretty },
@@ -41,36 +41,47 @@ import parseArgs from './snapshot/args/parse.js';
 
   const page = await openURL(url, puppeteerOptions);
   await login(page, values);
+  renewSession(page);
 
   const spinner = cli.spinner();
-  spinner.start(`Indexing course`);
-  const snapshot = await captureSnapshot(page, {
-    url,
-    ...snapshotOptions
-  });
-
-  if (snapshot) {
-    spinner.succeed(
-      `${isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} indexed`
-    );
-    if (fs.existsSync(outputPath)) {
-      outputPath = path.join(
-        outputPath,
-        `${pathsafeTimestamp()}-${isApiError(snapshot.SectionInfo) ? 'export' : `${snapshot.SectionInfo.Id}_${snapshot.SectionInfo.GroupName.replace(/[^a-z0-9]+/gi, '_')}`}`
+  if (all) {
+    spinner.start('Indexing courses');
+    const snapshots = await captureAllSnapshots(page, {
+      url,
+      ...snapshotOptions,
+      ...allOptions
+    });
+    fs.mkdirSync(outputPath, { recursive: true });
+    for (const snapshot of snapshots) {
+      await downloadSnapshot(snapshot, outputPath, {
+        url,
+        pretty,
+        ...downloadOptions
+      });
+    }
+  } else {
+    spinner.start(`Indexing course`);
+    const snapshot = await captureSnapshot(page, {
+      url,
+      ...snapshotOptions
+    });
+    if (snapshot) {
+      spinner.succeed(
+        `${isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} indexed`
+      );
+      await downloadSnapshot(snapshot, outputPath, {
+        url,
+        pretty,
+        ...downloadOptions
+      });
+    } else {
+      spinner.fail(
+        `Course could not be indexed (is ${cli.colors.url(url)} a page within the course?)`
       );
     }
-    await download(snapshot, outputPath, {
-      host: new URL(url).hostname,
-      pathToComponent: path.basename(outputPath),
-      include: [/^\//]
-    });
-    writeJSON(path.join(outputPath, 'index.json'), snapshot, { pretty });
-  } else {
-    spinner.fail(
-      `Course could not be indexed (is ${cli.colors.url(url)} a page within the course?)`
-    );
   }
 
+  stopRenewingSession();
   if (quit) {
     await page.browser().close();
   }
