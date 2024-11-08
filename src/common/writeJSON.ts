@@ -1,6 +1,7 @@
 import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
+import pathsafeTimestamp from './pathsafeTimestamp.js';
 
 export default async function writeJSON(
   outputPath: string | undefined,
@@ -11,7 +12,7 @@ export default async function writeJSON(
   if (data) {
     if (outputPath) {
       spinner.start('Writing output to file');
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const timestamp = pathsafeTimestamp();
       outputPath = outputPath.replace('%TIMESTAMP%', timestamp);
       let filePath = path.resolve(process.cwd(), outputPath);
       if (path.extname(outputPath).toLowerCase() == '') {

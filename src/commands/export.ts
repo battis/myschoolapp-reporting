@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 
 import cli from '@battis/qui-cli';
+import fs from 'node:fs';
 import path from 'node:path';
 import commonFlags from '../common/args/flags.js';
 import commonOptions from '../common/args/options.js';
 import login from '../common/login.js';
 import openURL from '../common/openURL.js';
+import pathsafeTimestamp from '../common/pathsafeTimestamp.js';
 import writeJSON from '../common/writeJSON.js';
+import flags from './export/args/flags.js';
+import options from './export/args/options.js';
 import download from './export/download.js';
-import captureSnapshot from './snapshot/Snapshot.js';
-import snapshotFlags from './snapshot/args/flags.js';
-import snapshotOptions from './snapshot/args/options.js';
+import { isApiError } from './snapshot/ApiError.js';
+import { captureSnapshot } from './snapshot/Snapshot.js';
+import parseArgs from './snapshot/args/parse.js';
 
 (async () => {
   let {
@@ -19,68 +23,55 @@ import snapshotOptions from './snapshot/args/options.js';
   } = cli.init({
     args: {
       requirePositionals: 1,
-      flags: { ...commonFlags, ...snapshotFlags },
-      options: { ...commonOptions, ...snapshotOptions }
+      flags: { ...commonFlags, ...flags },
+      options: { ...commonOptions, ...options }
     }
   });
 
-  let {
-    outputPath,
-    //groupsPath,
-    //association,
-    //termsOffered,
-    format = 'json',
-    contextLabelId,
-    editMode,
-    active,
-    future,
-    expired,
-    fromDate,
-    toDate
-  } = values;
-  const params = new URLSearchParams({
-    format,
-    contextLabelId,
-    editMode,
-    active,
-    future,
-    expired,
-    fromDate,
-    toDate
-  });
-  const host = new URL(url).host;
-  const headless = !!values.headless;
-  //const all = !!values.all;
-  const bulletinBoard = !!values.bulletinBoard;
-  const topics = !!values.topics;
-  const gradebook = !!values.gradebook;
-  //const batchSize = parseInt(values.batchSize);
-  const width = parseInt(values.viewportWidth);
-  const height = parseInt(values.viewportHeight);
-  const pretty = !!values.pretty;
-  const quit = !!values.quit;
-  const page = await openURL(url, {
-    headless: !!(headless && values.username && values.password),
-    defaultViewport: { width, height }
-  });
+  const {
+    puppeteerOptions,
+    snapshotOptions,
+    all,
+    allOptions,
+    outputOptions: { outputPath: op, pretty },
+    quit
+  } = parseArgs(values);
 
+  let outputPath = path.resolve(process.cwd(), op || '.');
+
+  const page = await openURL(url, puppeteerOptions);
   await login(page, values);
 
+  const spinner = cli.spinner();
+  spinner.start(`Indexing course`);
   const snapshot = await captureSnapshot(page, {
     url,
-    bulletinBoard,
-    topics,
-    gradebook,
-    params
+    ...snapshotOptions
   });
 
   if (snapshot) {
-    await download(snapshot, outputPath, { host, pathToComponent: 'Snapshot' });
+    spinner.succeed(
+      `${isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} indexed`
+    );
+    if (fs.existsSync(outputPath)) {
+      outputPath = path.join(
+        outputPath,
+        `${pathsafeTimestamp()}-${isApiError(snapshot.SectionInfo) ? 'export' : `${snapshot.SectionInfo.Id}_${snapshot.SectionInfo.GroupName.replace(/[^a-z0-9]+/gi, '_')}`}`
+      );
+    }
+    await download(snapshot, outputPath, {
+      host: new URL(url).hostname,
+      pathToComponent: path.basename(outputPath),
+      include: [/^\//]
+    });
+    writeJSON(path.join(outputPath, 'index.json'), snapshot, { pretty });
+  } else {
+    spinner.fail(
+      `Course could not be indexed (is ${cli.colors.url(url)} a page within the course?)`
+    );
   }
 
   if (quit) {
     await page.browser().close();
   }
-
-  writeJSON(path.join(outputPath, 'index.json'), snapshot, { pretty });
 })();

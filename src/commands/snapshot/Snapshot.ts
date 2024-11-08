@@ -1,7 +1,13 @@
 import cli from '@battis/qui-cli';
+import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { Page } from 'puppeteer';
+import humanize from '../../common/humanize.js';
+import writeJSON from '../../common/writeJSON.js';
 import captureBulletinBoard from './BulletinBoard.js';
 import captureGradebook from './Gradebook.js';
+import allGroups from './Groups.js';
 import captureSectionInfo from './SectionInfo.js';
 import captureTopics from './Topics.js';
 
@@ -24,7 +30,7 @@ type SnapshotOptions = {
   params?: URLSearchParams;
 };
 
-export default async function captureSnapshot(
+export async function captureSnapshot(
   page: Page,
   {
     url,
@@ -73,4 +79,97 @@ export default async function captureSnapshot(
     spinner.fail('Unknown group ID');
     return undefined;
   }
+}
+
+type AllSnapshotsOptions = {
+  association?: string;
+  termsOffered?: string;
+  groupsPath?: string;
+  batchSize?: number;
+  bulletinBoard?: boolean;
+  topics?: boolean;
+  gradebook?: boolean;
+  pretty?: boolean;
+  params?: URLSearchParams;
+};
+
+export async function captureAllSnapshots(
+  page: Page,
+  {
+    association,
+    termsOffered,
+    groupsPath,
+    batchSize = 25,
+    bulletinBoard = true,
+    topics = true,
+    params = new URLSearchParams(),
+    gradebook = true,
+    pretty = false
+  }: AllSnapshotsOptions
+) {
+  const session = crypto.randomUUID();
+  const _assoc = (association || '').split(',').map((t) => t.trim());
+  const _terms = (termsOffered || '').split(',').map((t) => t.trim());
+  const groups = (await allGroups(page)).filter(
+    (group) =>
+      (association === undefined || _assoc.includes(group.association)) &&
+      (termsOffered === undefined ||
+        _terms.reduce(
+          (match, term) => match && group.terms_offered.includes(term),
+          true
+        ))
+  );
+  const spinner = cli.spinner();
+  spinner.info(`${groups.length} groups match filters`);
+  if (groupsPath) {
+    writeJSON(groupsPath, groups, {
+      pretty,
+      name: 'groups'
+    });
+  }
+
+  const data: Snapshot[] = [];
+  await fs.mkdir(`/tmp/snapshot/${session}`, { recursive: true });
+  const zeros = new Array((groups.length + '').length).fill(0).join('');
+  function pad(n: number) {
+    return (zeros + n).slice(-zeros.length);
+  }
+  for (let i = 0; i < groups.length; i += batchSize) {
+    const batch = groups.slice(i, i + batchSize);
+    const host = new URL(page.url()).host;
+    humanize(
+      page,
+      path.join(
+        `https://${host}`,
+        'app/faculty#academicclass',
+        batch[0].lead_pk.toString(),
+        '0/bulletinboard'
+      )
+    );
+    await Promise.allSettled(
+      batch.map(async (group, n) => {
+        const snapshot = await captureSnapshot(page, {
+          groupId: group.lead_pk.toString(),
+          bulletinBoard,
+          topics,
+          gradebook,
+          params
+        });
+        await fs.writeFile(
+          `/tmp/snapshot/${session}/${pad(i + n)}.json`,
+          JSON.stringify(snapshot)
+        );
+      })
+    );
+  }
+  const partials = await fs.readdir(`/tmp/snapshot/${session}`);
+  for (const partial of partials) {
+    data.push(
+      JSON.parse(
+        (await fs.readFile(`/tmp/snapshot/${session}/${partial}`)).toString()
+      )
+    );
+  }
+  await fs.rm(`/tmp/snapshot`, { recursive: true });
+  return data;
 }

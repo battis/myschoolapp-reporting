@@ -17,7 +17,7 @@ type Options = {
 export default async function download(
   snapshotComponent: object,
   outputPath: string,
-  { host, pathToComponent, include = [], exclude = [] }: Options
+  { host, pathToComponent, include, exclude }: Options
 ) {
   if (Array.isArray(snapshotComponent)) {
     await Promise.allSettled(
@@ -43,7 +43,19 @@ export default async function download(
             exclude
           });
         } else if (/Url$/.test(key)) {
-          if (snapshotComponent[key]) {
+          if (
+            snapshotComponent[key] &&
+            (!include ||
+              include.reduce(
+                (i, r) => i || r.test(snapshotComponent[key]),
+                false
+              )) &&
+            (!exclude ||
+              exclude.reduce(
+                (e, r) => e && !r.test(snapshotComponent[key]),
+                true
+              ))
+          ) {
             if (cache[snapshotComponent[key]]) {
               (snapshotComponent as any)[`Local${key}`] =
                 cache[snapshotComponent[key]];
@@ -84,7 +96,10 @@ export default async function download(
                     )
                   );
 
-                  (snapshotComponent as any)[`Local${key}`] = localPath;
+                  (snapshotComponent[key] as any) = {
+                    original: snapshotComponent[key],
+                    localPath
+                  };
                   spinner.succeed(
                     `${pathToComponent}.${key}: ${cli.colors.url(localPath)}`
                   );
