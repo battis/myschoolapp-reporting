@@ -1,2 +1,2 @@
-export * as args from './args.js';
+export * as args from './OAuth2/args.js';
 export { getToken } from './OAuth2/refresh.js';
