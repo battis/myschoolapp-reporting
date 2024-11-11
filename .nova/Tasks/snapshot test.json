@@ -2,7 +2,7 @@
   "actions" : {
     "run" : {
       "enabled" : true,
-      "script" : "source .env\ntsx .\/src\/commands\/snapshot.ts -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --association \"Classes\" --groupsPath .\/var --outputPath .\/var --all \"$URL\""
+      "script" : "source .env\ntsx .\/src\/bin\/snapshot.ts -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var --no-bulletinBoard --no-topics --no-gradebook \"$URL\""
     }
   },
   "openLogOnRun" : "start"

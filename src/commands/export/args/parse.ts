@@ -1,6 +1,6 @@
-import parseSnapshotArgs from '../../snapshot/args/parse.js';
+import * as snapshot from '../../snapshot.js';
 
-type Result = ReturnType<typeof parseSnapshotArgs> & {
+type Result = ReturnType<typeof snapshot.args.parse> & {
   downloadOptions: {
     include?: RegExp[];
     exclude?: RegExp[];
@@ -13,9 +13,9 @@ function stringToRegExpArray(arg: string): RegExp[] | undefined {
     : undefined;
 }
 
-export default function parseArgs(values: Record<string, string>): Result {
+export function parse(values: Record<string, string>): Result {
   return {
-    ...parseSnapshotArgs(values),
+    ...snapshot.args.parse(values),
     downloadOptions: {
       include: stringToRegExpArray(values.include),
       exclude: stringToRegExpArray(values.exclude)

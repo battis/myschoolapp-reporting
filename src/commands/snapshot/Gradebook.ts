@@ -10,7 +10,7 @@ type Gradebook = {
   }[];
 };
 
-export default async function captureGradebook(
+export async function captureGradebook(
   page: Page,
   groupId: string,
   params: URLSearchParams

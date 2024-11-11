@@ -13,8 +13,8 @@
   },
   "type": "module",
   "bin": {
-    "export": "./dist/commands/export.js",
-    "snapshot": "./dist/commands/snapshot.js"
+    "export": "./dist/bin/export.js",
+    "snapshot": "./dist/bin/snapshot.js"
   },
   "scripts": {
     "clean": "del ./dist",
@@ -32,6 +32,8 @@
   "dependencies": {
     "@battis/qui-cli": "^0.6.3",
     "@battis/typescript-tricks": "^0.6.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.21.1",
     "expressionparser": "^1.1.5",
     "open": "^10.1.0",
@@ -42,6 +44,7 @@
     "@battis/prettier-config": "latest",
     "@changesets/cli": "^2.27.9",
     "@tsconfig/node20": "^20.1.4",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.0",
     "del-cli": "^6.0.0",
     "npm-run-all": "^4.1.5",

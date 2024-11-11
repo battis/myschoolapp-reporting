@@ -1,8 +1,9 @@
 import cli from '@battis/qui-cli';
+import * as common from '../../../common.js';
 
-export default {
+export const flags = {
   all: {
-    short: 'a',
+    short: 'A',
     description: `Capture all sections (default: ${cli.colors.value('false')}, positional argument is used to identify MySchoolApp instance)`,
     default: false
   },
@@ -32,12 +33,15 @@ export default {
     short: 't',
     default: true
   },
+  assignments: {
+    short: 'a',
+    description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${cli.colors.value('clientId')}, ${cli.colors.value('clientSecret')}, ${cli.colors.value('redirectUri')}, and ${cli.colors.value('subscriptionKey')} options set)`,
+    default: true
+  },
   gradebook: {
     description: `Include the course Gradebook in the snapshot (default ${cli.colors.value('true')})`,
     short: 'g',
     default: true
   },
-  pretty: {
-    description: `Pretty print output to file (if ${cli.colors.value('output')} is defined)`
-  }
+  ...common.args.flags
 };

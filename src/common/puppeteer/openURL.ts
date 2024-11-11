@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 
-export default async function openURL(
+export async function openURL(
   url: string,
   options: Parameters<typeof puppeteer.launch>[0] = {
     headless: false,

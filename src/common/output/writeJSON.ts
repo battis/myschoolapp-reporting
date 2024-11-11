@@ -1,9 +1,9 @@
 import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
-import pathsafeTimestamp from './pathsafeTimestamp.js';
+import { pathsafeTimestamp } from './pathsafeTimestamp.js';
 
-export default async function writeJSON(
+export async function writeJSON(
   outputPath: string | undefined,
   data: object | undefined,
   { pretty = false, name = 'output' } = {}

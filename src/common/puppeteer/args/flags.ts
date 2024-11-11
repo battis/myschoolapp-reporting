@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
 
-export default {
+export const flags = {
   headless: {
     description: `Run Puppeteer's Chrome instance headless (default:${cli.colors.value('false')})`,
     default: false

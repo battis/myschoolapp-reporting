@@ -3,13 +3,13 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
-import humanize from '../../common/humanize.js';
-import writeJSON from '../../common/writeJSON.js';
-import captureBulletinBoard from './BulletinBoard.js';
-import captureGradebook from './Gradebook.js';
-import allGroups from './Groups.js';
-import captureSectionInfo from './SectionInfo.js';
-import captureTopics from './Topics.js';
+import * as common from '../../common.js';
+import { captureAssignments } from './Assignments.js';
+import { captureBulletinBoard } from './BulletinBoard.js';
+import { captureGradebook } from './Gradebook.js';
+import { allGroups } from './Groups.js';
+import { captureSectionInfo } from './SectionInfo.js';
+import { captureTopics } from './Topics.js';
 
 type Snapshot = {
   Timestamp: Date;
@@ -18,6 +18,7 @@ type Snapshot = {
   GroupId: string;
   BulletinBoard?: Awaited<ReturnType<typeof captureBulletinBoard>>;
   Topics?: Awaited<ReturnType<typeof captureTopics>>;
+  Assignments?: Awaited<ReturnType<typeof captureAssignments>>;
   Gradebook?: Awaited<ReturnType<typeof captureGradebook>>;
 };
 
@@ -26,7 +27,10 @@ type SnapshotOptions = {
   groupId?: string;
   bulletinBoard?: boolean;
   topics?: boolean;
+  assignments?: boolean;
   gradebook?: boolean;
+  tokenPath?: string;
+  credentials?: Parameters<typeof common.OAuth2.getToken>[1];
   params?: URLSearchParams;
 };
 
@@ -37,8 +41,10 @@ export async function captureSnapshot(
     groupId,
     bulletinBoard = true,
     topics = true,
+    assignments = true,
     gradebook = true,
-    params = new URLSearchParams()
+    params = new URLSearchParams(),
+    ...assignmentOptions
   }: SnapshotOptions
 ) {
   const spinner = cli.spinner();
@@ -48,12 +54,16 @@ export async function captureSnapshot(
   }
   if (groupId) {
     spinner.start(`Capturing section ID ${groupId}`);
-    const [SectionInfo, BulletinBoard, Topics, Gradebook] = await Promise.all([
-      captureSectionInfo(page, groupId),
-      bulletinBoard ? captureBulletinBoard(page, groupId, params) : undefined,
-      topics ? captureTopics(page, groupId, params) : undefined,
-      gradebook ? captureGradebook(page, groupId, params) : undefined
-    ]);
+    const [SectionInfo, BulletinBoard, Topics, Assignments, Gradebook] =
+      await Promise.all([
+        captureSectionInfo(page, groupId),
+        bulletinBoard ? captureBulletinBoard(page, groupId, params) : undefined,
+        topics ? captureTopics(page, groupId, params) : undefined,
+        assignments
+          ? captureAssignments(page, groupId, params, assignmentOptions)
+          : undefined,
+        gradebook ? captureGradebook(page, groupId, params) : undefined
+      ]);
 
     const snapshot: Snapshot = {
       Timestamp: new Date(),
@@ -64,6 +74,7 @@ export async function captureSnapshot(
       SectionInfo,
       BulletinBoard,
       Topics,
+      Assignments,
       Gradebook
     };
 
@@ -122,7 +133,7 @@ export async function captureAllSnapshots(
   const spinner = cli.spinner();
   spinner.info(`${groups.length} groups match filters`);
   if (groupsPath) {
-    writeJSON(groupsPath, groups, {
+    common.output.writeJSON(groupsPath, groups, {
       pretty,
       name: 'groups'
     });
@@ -137,7 +148,7 @@ export async function captureAllSnapshots(
   for (let i = 0; i < groups.length; i += batchSize) {
     const batch = groups.slice(i, i + batchSize);
     const host = new URL(page.url()).host;
-    humanize(
+    common.puppeteer.humanize(
       page,
       path.join(
         `https://${host}`,

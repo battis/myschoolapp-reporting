@@ -10,7 +10,7 @@ type Topic = api.DataDirect.SectionTopic & {
   })[];
 };
 
-export default async function captureTopics(
+export async function captureTopics(
   page: Page,
   groupId: string,
   params: URLSearchParams

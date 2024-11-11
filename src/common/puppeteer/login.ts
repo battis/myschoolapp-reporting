@@ -1,6 +1,8 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
-import isReady from './isReady.js';
+import { isReady } from './isReady.js';
+
+const timeout = 300000;
 
 type LoginOptions = {
   username?: string;
@@ -8,7 +10,7 @@ type LoginOptions = {
   sso?: string;
 };
 
-export default async function login(
+export async function login(
   page: Page,
   { username, password, sso }: LoginOptions = {}
 ) {
@@ -17,7 +19,7 @@ export default async function login(
 
   if (username) {
     // Blackbaud username entry
-    const userField = await page.waitForSelector('input#Username');
+    const userField = await page.waitForSelector('input#Username', { timeout });
     const nextButton = await page.waitForSelector('input#nextBtn');
     if (userField) {
       await userField.type(username);
@@ -29,7 +31,8 @@ export default async function login(
     switch (sso) {
       case 'entra-id':
         const passwordField = await page.waitForSelector(
-          'input[name="passwd"]'
+          'input[name="passwd"]',
+          { timeout }
         );
         const submitButton = await page.waitForSelector('input[type="submit"]');
         if (passwordField) {
@@ -39,6 +42,6 @@ export default async function login(
     }
   }
 
-  await isReady(page, 300000);
+  await isReady(page, timeout);
   spinner.succeed('Login complete');
 }

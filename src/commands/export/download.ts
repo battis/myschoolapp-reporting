@@ -4,12 +4,17 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { ReadableStream } from 'node:stream/web';
-import pathsafeTimestamp from '../../common/pathsafeTimestamp.js';
-import writeJSON from '../../common/writeJSON.js';
-import { isApiError } from '../snapshot/ApiError.js';
-import { captureSnapshot } from '../snapshot/Snapshot.js';
+import * as common from '../../common.js';
+import * as snapshotCommand from '../snapshot.js';
 
 const cache: Record<string, string> = {};
+
+type Options = {
+  url: string;
+  pretty?: boolean;
+  include?: RegExp[];
+  exclude?: RegExp[];
+};
 
 type DownloadOptions = {
   host: string;
@@ -18,13 +23,8 @@ type DownloadOptions = {
   exclude?: RegExp[];
 };
 
-type Options = DownloadOptions & {
-  url: string;
-  pretty?: boolean;
-};
-
-export default async function downloadSnapshot(
-  snapshot: Awaited<ReturnType<typeof captureSnapshot>>,
+export async function downloadSnapshot(
+  snapshot: Awaited<ReturnType<typeof snapshotCommand.captureSnapshot>>,
   outputPath: string,
   { url, pretty = false, ...options }: Options
 ) {
@@ -34,7 +34,7 @@ export default async function downloadSnapshot(
     if (fs.existsSync(outputPath)) {
       outputPath = path.join(
         outputPath,
-        `${pathsafeTimestamp()}-${isApiError(snapshot.SectionInfo) ? 'export' : `${snapshot.SectionInfo.Id}_${snapshot.SectionInfo.GroupName.replace(/[^a-z0-9]+/gi, '_')}`}`
+        `${common.output.pathsafeTimestamp()}-${snapshotCommand.isApiError(snapshot.SectionInfo) ? 'export' : `${snapshot.SectionInfo.Id}_${snapshot.SectionInfo.GroupName.replace(/[^a-z0-9]+/gi, '_')}`}`
       );
     }
     await download(snapshot, outputPath, {
@@ -42,9 +42,11 @@ export default async function downloadSnapshot(
       host: new URL(url).hostname,
       pathToComponent: path.basename(outputPath)
     });
-    writeJSON(path.join(outputPath, 'index.json'), snapshot, { pretty });
+    common.output.writeJSON(path.join(outputPath, 'index.json'), snapshot, {
+      pretty
+    });
     spinner.succeed(
-      `${isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}`
+      `${snapshotCommand.isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}`
     );
   } else {
     spinner.fail('Could not downlod course content (no index available)');

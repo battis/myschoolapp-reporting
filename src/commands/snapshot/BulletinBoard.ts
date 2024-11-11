@@ -8,7 +8,7 @@ type BulletinBoard = (api.DataDirect.BulletinBoardContent & {
   ContentType?: api.DataDirect.ContentType;
 })[];
 
-export default async function captureBulletinBoard(
+export async function captureBulletinBoard(
   page: Page,
   groupId: string,
   params: URLSearchParams
