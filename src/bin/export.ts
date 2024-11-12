@@ -3,7 +3,7 @@
 import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
-import { args, downloadSnapshot } from '../commands/export.js';
+import { args, downloadSnapshot } from '../commands/download.js';
 import * as snapshot from '../commands/snapshot.js';
 import * as common from '../common.js';
 
@@ -59,7 +59,9 @@ import * as common from '../common.js';
     spinner.start(`Indexing course`);
     const s = await snapshot.captureSnapshot(page, {
       url,
-      ...snapshotOptions
+      ...snapshotOptions,
+      tokenPath,
+      credentials
     });
     if (s) {
       spinner.succeed(

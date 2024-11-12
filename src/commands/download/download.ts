@@ -133,6 +133,7 @@ async function download(
                   fs.mkdirSync(path.dirname(streamPath), {
                     recursive: true
                   });
+                  // FIXME not clear that this is working for the ftp downloads
                   await finished(
                     Readable.fromWeb(response.body as ReadableStream<any>).pipe(
                       fs.createWriteStream(streamPath)

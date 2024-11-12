@@ -35,19 +35,7 @@ export async function captureAssignments(
 
   const host = new URL(page.url()).hostname;
   const assignments: api.Assignment2.Response[] = [];
-  let paused = false;
   let complete = false;
-  let requests: (() => Promise<void>)[] = [];
-  function nextRequest() {
-    if (requests.length === 0) {
-      paused = false;
-    } else {
-      const next = requests.shift();
-      if (next) {
-        next();
-      }
-    }
-  }
   function completion(timeout = 30000): Promise<void> {
     let duration = 0;
     return new Promise((resolve, reject) => {
@@ -73,13 +61,6 @@ export async function captureAssignments(
   await assPage.setRequestInterception(true);
   assPage.on('request', (request) => {
     request.continue();
-    /*
-    if (paused) {
-      requests.push(() => request.continue());
-    } else {
-      paused = true;
-      request.continue();
-    }*/
   });
   assPage.on('requestfinished', async (request) => {
     if (
@@ -89,13 +70,7 @@ export async function captureAssignments(
       const response = request.response();
       assignments.push(await response?.json());
       complete = true;
-      paused = false;
-      requests = [];
     }
-    nextRequest();
-  });
-  assPage.on('requestfailed', (request) => {
-    nextRequest();
   });
 
   for (const assignment of assignmentList.value) {
@@ -105,8 +80,8 @@ export async function captureAssignments(
     );
     await completion();
   }
-
   await assPage.close();
+
   spinner.succeed('Assignments captured');
   return assignments;
 }
