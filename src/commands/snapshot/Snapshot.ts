@@ -11,7 +11,7 @@ import { allGroups } from './Groups.js';
 import { captureSectionInfo } from './SectionInfo.js';
 import { captureTopics } from './Topics.js';
 
-type Snapshot = {
+export type Snapshot = {
   Timestamp: Date;
   CapturedBy: EmailString;
   SectionInfo: Awaited<ReturnType<typeof captureSectionInfo>>;
@@ -44,7 +44,8 @@ export async function captureSnapshot(
     assignments = true,
     gradebook = true,
     params = new URLSearchParams(),
-    ...assignmentOptions
+    tokenPath,
+    credentials
   }: SnapshotOptions
 ) {
   const spinner = cli.spinner();
@@ -59,11 +60,17 @@ export async function captureSnapshot(
         captureSectionInfo(page, groupId),
         bulletinBoard ? captureBulletinBoard(page, groupId, params) : undefined,
         topics ? captureTopics(page, groupId, params) : undefined,
-        assignments
-          ? captureAssignments(page, groupId, params, assignmentOptions)
+        assignments && tokenPath && credentials
+          ? captureAssignments(page, groupId, params, {
+              tokenPath,
+              credentials
+            })
           : undefined,
         gradebook ? captureGradebook(page, groupId, params) : undefined
       ]);
+    if (assignments && (!tokenPath || !credentials)) {
+      spinner.fail('Assignments not captured (missing OAuth 2.0 credentials)');
+    }
 
     const snapshot: Snapshot = {
       Timestamp: new Date(),
@@ -115,7 +122,9 @@ export async function captureAllSnapshots(
     topics = true,
     params = new URLSearchParams(),
     gradebook = true,
-    pretty = false
+    pretty = false,
+    tokenPath,
+    credentials
   }: AllSnapshotsOptions
 ) {
   const session = crypto.randomUUID();
@@ -164,7 +173,9 @@ export async function captureAllSnapshots(
           bulletinBoard,
           topics,
           gradebook,
-          params
+          params,
+          tokenPath,
+          credentials
         });
         await fs.writeFile(
           `/tmp/snapshot/${session}/${pad(i + n)}.json`,

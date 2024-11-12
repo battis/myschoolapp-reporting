@@ -40,7 +40,6 @@ export function parse(values: Record<string, string>): Result {
   const batchSize = parseInt(values.batchSize);
 
   const commonParsed = common.args.parse(values);
-  const { tokenPath, credentials, ...commonArgs } = commonParsed;
 
   return {
     snapshotOptions: {
@@ -48,12 +47,10 @@ export function parse(values: Record<string, string>): Result {
       bulletinBoard,
       topics,
       assignments,
-      gradebook,
-      tokenPath,
-      credentials
+      gradebook
     },
     all,
     allOptions: { association, termsOffered, groupsPath, batchSize },
-    ...commonArgs
+    ...commonParsed
   };
 }

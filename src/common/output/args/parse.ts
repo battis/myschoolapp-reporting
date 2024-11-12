@@ -5,6 +5,6 @@ type Result = {
 export function parse(values: Record<string, string>): Result {
   const pretty = !!values.pretty;
   return {
-    outputOptions: { outputPath: values.outputPatb, pretty }
+    outputOptions: { outputPath: values.outputPath, pretty }
   };
 }

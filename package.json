@@ -36,6 +36,7 @@
     "ejs": "^3.1.10",
     "express": "^4.21.1",
     "expressionparser": "^1.1.5",
+    "json-2-csv": "^5.5.6",
     "open": "^10.1.0",
     "puppeteer": "^23.7.1"
   },

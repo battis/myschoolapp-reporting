@@ -25,7 +25,9 @@ import * as common from '../common.js';
     all,
     allOptions,
     outputOptions: { outputPath, pretty },
-    quit
+    quit,
+    tokenPath,
+    credentials
   } = args.parse(values);
 
   const page = await common.puppeteer.openURL(url, puppeteerOptions);
@@ -37,14 +39,19 @@ import * as common from '../common.js';
   let data;
 
   if (all) {
+    await common.OAuth2.getToken(tokenPath, credentials);
     data = await captureAllSnapshots(page, {
       ...snapshotOptions,
-      ...allOptions
+      ...allOptions,
+      tokenPath,
+      credentials
     });
   } else {
     data = await captureSnapshot(page, {
       url,
-      ...snapshotOptions
+      ...snapshotOptions,
+      tokenPath,
+      credentials
     });
   }
 

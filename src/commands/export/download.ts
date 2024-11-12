@@ -14,6 +14,8 @@ type Options = {
   pretty?: boolean;
   include?: RegExp[];
   exclude?: RegExp[];
+  tokenPath: string;
+  credentials: Parameters<typeof common.OAuth2.getToken>[1];
 };
 
 type DownloadOptions = {

@@ -19,12 +19,18 @@ export type Credentials = {
   redirect_uri: string;
 };
 
+let flag = false;
+export function isAuthorizing() {
+  return flag;
+}
+
 export async function authorize({
   client_id,
   client_secret,
   redirect_uri,
   ...subscriptionHeader
 }: Credentials): Promise<StorableToken> {
+  flag = true;
   return new Promise((resolve, reject) => {
     const spinner = cli.spinner();
     spinner.start('Please authorize this app in your web browser');
@@ -92,9 +98,11 @@ export async function authorize({
       server.close();
       if (rejection) {
         spinner.fail('Could not authorize');
+        flag = false;
         reject(rejection);
       }
       spinner.succeed('Authorized');
+      flag = false;
       resolve({ timestamp, ...(response as TokenResponse) });
     });
     app.get('*', (_, res) => {

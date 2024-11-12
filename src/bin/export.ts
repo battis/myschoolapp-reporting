@@ -25,7 +25,9 @@ import * as common from '../common.js';
     all,
     allOptions,
     outputOptions: { outputPath: op, pretty },
-    quit
+    quit,
+    tokenPath,
+    credentials
   } = args.parse(values);
 
   let outputPath = path.resolve(process.cwd(), op || '.');
@@ -36,6 +38,7 @@ import * as common from '../common.js';
 
   const spinner = cli.spinner();
   if (all) {
+    common.OAuth2.getToken(tokenPath, credentials);
     spinner.start('Indexing courses');
     const snapshots = await snapshot.captureAllSnapshots(page, {
       url,
@@ -47,7 +50,9 @@ import * as common from '../common.js';
       await downloadSnapshot(snapshot, outputPath, {
         url,
         pretty,
-        ...downloadOptions
+        ...downloadOptions,
+        tokenPath,
+        credentials
       });
     }
   } else {
@@ -63,7 +68,9 @@ import * as common from '../common.js';
       await downloadSnapshot(s, outputPath, {
         url,
         pretty,
-        ...downloadOptions
+        ...downloadOptions,
+        tokenPath,
+        credentials
       });
     } else {
       spinner.fail(

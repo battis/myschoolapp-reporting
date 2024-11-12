@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { authorize, Credentials } from './authorize.js';
+import { authorize, Credentials, isAuthorizing } from './authorize.js';
 import {
   isTokenError,
   StorableToken,
@@ -21,7 +21,18 @@ export async function getToken(tokenPath: string, credentials: Credentials) {
       refreshed = false;
     }
   } else {
-    tokens = await authorize(credentials);
+    if (!isAuthorizing()) {
+      tokens = await authorize(credentials);
+    } else {
+      async function awaitAuthorization() {
+        if (isAuthorizing()) {
+          setTimeout(awaitAuthorization, 100);
+        } else {
+          return await getToken(tokenPath, credentials);
+        }
+      }
+      awaitAuthorization();
+    }
   }
 
   if (refreshed) {
