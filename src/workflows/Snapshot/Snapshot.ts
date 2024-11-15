@@ -3,7 +3,6 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
-import pkg from '../../../package.json';
 import * as common from '../../common.js';
 import * as Assignments from './Assignments.js';
 import * as BulletinBoard from './BulletinBoard.js';
@@ -12,7 +11,7 @@ import * as Groups from './Groups.js';
 import * as SectionInfo from './SectionInfo.js';
 import * as Topics from './Topics.js';
 
-const TEMP = `/tmp/${pkg.name}`;
+const TEMP = `/tmp/msar`;
 
 type Metadata = {
   Host: string;
