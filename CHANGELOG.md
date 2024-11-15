@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.1
+
+### Patch Changes
+
+- b02bc5e: fix build
+
 ## 0.2.0
 
 ### Minor Changes
