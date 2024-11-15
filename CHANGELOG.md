@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.3
+
+### Patch Changes
+
+- 521254e: improve documentation
+
 ## 0.2.2
 
 ### Patch Changes
