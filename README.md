@@ -51,7 +51,7 @@ npx msar snaphot --help
 Get command arguments:
 
 ```sh
-npx snapshot --help
+npx msar snapshot --help
 ```
 
 To capture the course information for a single course:
