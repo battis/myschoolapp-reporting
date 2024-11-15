@@ -13,7 +13,8 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     args: {
       requirePositionals: 1,
       flags: { ...Snapshot.args.flags, ...Download.args.flags },
-      options: { ...Snapshot.args.options, ...Download.args.options }
+      options: { ...Snapshot.args.options, ...Download.args.options },
+      description: `Combine ${cli.colors.command('snapshot')} and ${cli.colors.command('download')} into a single command, snapshotting a course or courses and then downloading the files supporting those courses. In addition to relevant flags and options, the only argument expected is a URL to a page within the target course (or target LMS instance, if snapshotting more than one course).`
     }
   });
 

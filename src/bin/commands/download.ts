@@ -11,7 +11,10 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   } = cli.init({
     args: {
       requirePositionals: true,
-      ...Download.args
+      options: Download.args.options,
+      flags: Download.args.flags,
+      description:
+        'Download the supporting files for an existing snapshot JSON file.. This command expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output folder of supporting files.'
     }
   });
 

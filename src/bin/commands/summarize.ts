@@ -14,7 +14,13 @@ type Summary = api.DataDirect.SectionInfo & {
 (async () => {
   let {
     positionals: [snapshotPath, outputPath]
-  } = cli.init({ args: { requirePositionals: true } });
+  } = cli.init({
+    args: {
+      requirePositionals: true,
+      description:
+        'Summarize an existing snapshot file as a CSV file, to bring into existing spreadsheet or other analysis software. This expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output file.'
+    }
+  });
 
   if (!outputPath) {
     outputPath = snapshotPath.replace(/\.json$/, '.csv');

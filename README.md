@@ -6,7 +6,9 @@ Snapshot course data in Blackbaud's MySchoolApp LMS
 
 This tool was developed to collect the data necessary to generate analytics about how teachers and students are (or are not) using the LMS. It operates by either a) making calls to the old Podium DataDirect front-end API (where possible), or by capturing the data from the updated SKY UX front-end API as it page views are loaded. It does this by using Puppeteer to control Chrome and script all of these interactions. Essentially, you can think of it as "what would happen if I logged in as an admin, clicked around a lot, and took copious notes."
 
-This is a command line tool that depends on [Node.js]( https://nodejs.org/) and its (included) `npm` package manager. You need to install Node for this tool to work.
+This is a command line tool that depends on [Node.js](https://nodejs.org/) and its (included) `npm` package manager. You need to install Node for this tool to work.
+
+The result of taking a "snapshot" of a course or LMS instance is a JSON file of as much data as can be collected (or as requested).
 
 ## Install
 
@@ -35,11 +37,11 @@ npx msar snapshot --all
 
 At present the following verbs are implemented:
 
-  - `download` the supporting files for an existing snapshot file.
-  - `export` one or more courses with their supporting files from the LMS.
-  - `snapshot` the course data for one or more classes from the LMS.
-  - `summarize` the contents of an existing snapshot file.
-  
+- `download` the supporting files for an existing snapshot file.
+- `export` one or more courses with their supporting files from the LMS.
+- `snapshot` the course data for one or more classes from the LMS.
+- `summarize` the contents of an existing snapshot file.
+
 For each command, the `--help` (or `-h`) flag provides usage instructions:
 
 ```sh
@@ -64,4 +66,4 @@ If you store your login credentials in 1Passwrd, you can pass username and passw
 npx msar snapshot -u "$(op item get $OP_ITEM --fields username)" -p "$(op item get $OP_ITEM --fields password --reveal)" --sso "entra-id" https://groton.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
 ```
 
-The only single sign-on/multifactor authentication interaction that is currently scripted is Entra ID. All other sign-ons and MFA interaction will require running the app _not_ in headless mode (as it is by default, or by invoking it with the `--no-headless` flag) to allow for an interactive login.
+The only single sign-on/multi-factor authentication interaction that is currently scripted is Entra ID (for my personal convenience). All other sign-ons and MFA interaction will require running the app _not_ in headless mode (as it is by default, or by invoking it with the `--no-headless` flag) to allow for an interactive login.
