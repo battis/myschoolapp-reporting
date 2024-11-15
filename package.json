@@ -21,6 +21,7 @@
     "build:clean": "run-s clean",
     "build:compile": "tsc",
     "release": "run-s release:*",
+    "release:build": "run-s build",
     "release:changeset": "changeset version",
     "release:publish": "pnpm publish -r --otp $(op item get npm --otp)"
   },
