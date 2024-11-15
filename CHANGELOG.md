@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.5
+
+### Patch Changes
+
+- 60d3099: more documentation tweaks
+
 ## 0.2.4
 
 ### Patch Changes
