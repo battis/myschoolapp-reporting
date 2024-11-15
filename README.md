@@ -48,19 +48,13 @@ For each command, the `--help` (or `-h`) flag provides usage instructions:
 npx msar snaphot --help
 ```
 
-Get command arguments:
-
-```sh
-npx msar snapshot --help
-```
-
 To capture the course information for a single course:
 
 ```sh
 npx msar snapshot https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
 ```
 
-If you store your login credentials in 1Passwrd, you can pass username and password using `op` cli tool (`$OP_ITEM` environment variable is the item identifier in 1Password of the desired login):
+If you store your login credentials in 1Password, you can pass username and password using `op` cli tool (`$OP_ITEM` environment variable is the item identifier in 1Password of the desired login):
 
 ```sh
 npx msar snapshot -u "$(op item get $OP_ITEM --fields username)" -p "$(op item get $OP_ITEM --fields password --reveal)" --sso "entra-id" https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
