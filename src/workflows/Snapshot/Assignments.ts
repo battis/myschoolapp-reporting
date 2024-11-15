@@ -12,12 +12,9 @@ type Options = {
 };
 
 export const MissingCredentials = new Error(
-  `Assignments cannot be captured without valid OAuth 2.0 credentials. ${Object.keys(
-    common.OAuth2.args.options
-  )
-    .map(cli.colors.value)
-    .join(', ')
-    .replace(/, ([^,]+)$/, 'and $1')} must all be configured.`
+  `Assignments cannot be captured without valid OAuth 2.0 credentials. ${common.oxfordComma(
+    Object.keys(common.OAuth2.args.options).map(cli.colors.value)
+  )} must all be configured.`
 );
 
 export async function capture(

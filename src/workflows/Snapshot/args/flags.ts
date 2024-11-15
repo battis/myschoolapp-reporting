@@ -36,12 +36,11 @@ export const flags = {
   },
   assignments: {
     short: 'a',
-    description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${Object.keys(
-      common.OAuth2.args.options
-    )
-      .map((option) => cli.colors.value(option))
-      .join(', ')
-      .replace(/, ([^,]+)$/, ' and $1')} options set)`,
+    description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${common.oxfordComma(
+      Object.keys(common.OAuth2.args.options).map((option) =>
+        cli.colors.value(option)
+      )
+    )} options set)`,
     default: true
   },
   gradebook: {

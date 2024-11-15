@@ -17,7 +17,16 @@ export const options = {
     default: '2'
   },
   association: {
-    description: `Comma-separated list of group associations to include if ${cli.colors.value('all')} is defined`
+    description: `Comma-separated list of group associations to include if ${cli.colors.value('all')} is defined. Possible values: ${common.oxfordComma(
+      [
+        'Activities',
+        'Advisories',
+        'Classes',
+        'Community Groups',
+        'Dorms',
+        'Teams'
+      ].map((assoc) => cli.colors.quotedValue(`"${assoc}"`))
+    )}`
   },
   termsOffered: {
     description: `Comma-separated list of terms to include if ${cli.colors.value('all')} is defined`

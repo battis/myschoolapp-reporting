@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
+import pkg from '../../../package.json';
 import * as common from '../../common.js';
 import * as Assignments from './Assignments.js';
 import * as BulletinBoard from './BulletinBoard.js';
@@ -10,6 +11,8 @@ import * as Gradebook from './Gradebook.js';
 import * as Groups from './Groups.js';
 import * as SectionInfo from './SectionInfo.js';
 import * as Topics from './Topics.js';
+
+const TEMP = `/tmp/${pkg.name}`;
 
 type Metadata = {
   Host: string;
@@ -152,6 +155,7 @@ export async function captureAll(
         ))
   );
   const spinner = cli.spinner();
+  spinner.info(`Snapshot session ID ${cli.colors.value(session)}`);
   spinner.info(`${groups.length} groups match filters`);
   if (groupsPath) {
     common.output.writeJSON(groupsPath, groups, {
@@ -161,7 +165,7 @@ export async function captureAll(
   }
 
   const data: Data[] = [];
-  await fs.mkdir(`/tmp/snapshot/${session}`, { recursive: true });
+  await fs.mkdir(`${TEMP}/${session}`, { recursive: true });
   const zeros = new Array((groups.length + '').length).fill(0).join('');
   function pad(n: number) {
     return (zeros + n).slice(-zeros.length);
@@ -198,20 +202,20 @@ export async function captureAll(
           credentials
         });
         await fs.writeFile(
-          `/tmp/snapshot/${session}/${pad(i + n)}.json`,
+          `${TEMP}/${session}/${pad(i + n)}.json`,
           JSON.stringify(snapshot)
         );
       })
     );
   }
-  const partials = await fs.readdir(`/tmp/snapshot/${session}`);
+  const partials = await fs.readdir(`${TEMP}/${session}`);
   for (const partial of partials) {
     data.push(
       JSON.parse(
-        (await fs.readFile(`/tmp/snapshot/${session}/${partial}`)).toString()
+        (await fs.readFile(`${TEMP}/${session}/${partial}`)).toString()
       )
     );
   }
-  await fs.rm(`/tmp/snapshot`, { recursive: true });
+  await fs.rm(TEMP, { recursive: true });
   return data;
 }
