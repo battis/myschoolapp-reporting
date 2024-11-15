@@ -1,6 +1,15 @@
 {
   "name": "myschoolapp-reporting",
   "version": "0.2.4",
+  "keywords": [
+    "Blackbaud",
+    "Podium",
+    "MySchoolApp",
+    "LMS",
+    "export",
+    "reporting",
+    "analytics"
+  ],
   "homepage": "https://github.com/battis/myschoolapp-reporting#readme",
   "repository": {
     "type": "git",
