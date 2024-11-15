@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.4
+
+### Patch Changes
+
+- 3fe6f7e: tweak wording
+
 ## 0.2.3
 
 ### Patch Changes
