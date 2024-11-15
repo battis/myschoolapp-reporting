@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.6
+
+### Patch Changes
+
+- 8221aa5: fix qui-cli dependency
+
 ## 0.2.5
 
 ### Patch Changes
