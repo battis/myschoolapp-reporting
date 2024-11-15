@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.2.2
+
+### Patch Changes
+
+- faee14a: fix credentials error
+
 ## 0.2.1
 
 ### Patch Changes
