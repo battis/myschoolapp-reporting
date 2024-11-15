@@ -2,7 +2,7 @@
   "actions" : {
     "run" : {
       "enabled" : true,
-      "script" : "source .env\ntsx .\/src\/bin\/snapshot.ts -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var --association Classes --termsOffered Fall \"$URL\""
+      "script" : "source .env\ntsx .\/src\/bin\/msar.ts snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var --association Classes --all \"$URL\""
     }
   },
   "openLogOnRun" : "start"

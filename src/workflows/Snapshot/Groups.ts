@@ -2,7 +2,7 @@ import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 
-export async function allGroups(page: Page, year?: string) {
+export async function all(page: Page, year?: string) {
   const spinner = cli.spinner();
   spinner.start('Listing all groups');
   if (!year) {

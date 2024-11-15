@@ -3,18 +3,18 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-type Gradebook = {
+export type Data = {
   markingPeriods?: {
     markingPeriod: api.DataDirect.MarkingPeriod;
     gradebook: api.DataDirect.Gradebook;
   }[];
 };
 
-export async function captureGradebook(
+export async function capture(
   page: Page,
   groupId: string,
   params: URLSearchParams
-): Promise<Gradebook | ApiError> {
+): Promise<Data | ApiError> {
   const spinner = cli.spinner();
   spinner.start('Capturing gradebook');
   try {
@@ -26,7 +26,7 @@ export async function captureGradebook(
             `https://${host}/api/datadirect/GradeBookMarkingPeriodList?sectionId=${groupId}`
           )
         ).json();
-        const gradebook: Gradebook = { markingPeriods: [] };
+        const gradebook: Data = { markingPeriods: [] };
         for (const markingPeriod of markingPeriods) {
           gradebook.markingPeriods?.push({
             markingPeriod,

@@ -6,7 +6,7 @@ type Result = {
 };
 
 export function parse(values: Record<string, string>): Result {
-  const credentials = {
+  let credentials = {
     client_id: values.clientId || process.env.CLIENT_ID,
     client_secret: values.clientSecret || process.env.CLIENT_SECRET,
     redirect_uri: values.redirectUri || process.env.REDIRECT_URI,
@@ -16,6 +16,7 @@ export function parse(values: Record<string, string>): Result {
 
   return {
     credentials:
+      // all credentials must be defined to return any credentials
       credentials.client_id &&
       credentials.client_secret &&
       credentials.redirect_uri &&

@@ -1,12 +1,6 @@
-#!/usr/bin/env node
-
 import cli from '@battis/qui-cli';
-import {
-  args,
-  captureAllSnapshots,
-  captureSnapshot
-} from '../commands/snapshot.js';
-import * as common from '../common.js';
+import * as common from '../../common.js';
+import * as Snapshot from '../../workflows/Snapshot.js';
 
 (async () => {
   let {
@@ -15,7 +9,7 @@ import * as common from '../common.js';
   } = cli.init({
     args: {
       requirePositionals: 1,
-      ...args
+      ...Snapshot.args
     }
   });
 
@@ -28,7 +22,7 @@ import * as common from '../common.js';
     quit,
     tokenPath,
     credentials
-  } = args.parse(values);
+  } = Snapshot.args.parse(values);
 
   const page = await common.puppeteer.openURL(url, puppeteerOptions);
   await common.puppeteer.login(page, values);
@@ -39,15 +33,20 @@ import * as common from '../common.js';
   let data;
 
   if (all) {
-    await common.OAuth2.getToken(tokenPath, credentials);
-    data = await captureAllSnapshots(page, {
+    if (snapshotOptions.assignments) {
+      if (!tokenPath || !credentials) {
+        throw new Error('OAuth 2.0 credentials required');
+      }
+      await common.OAuth2.getToken(tokenPath, credentials);
+    }
+    data = await Snapshot.captureAll(page, {
       ...snapshotOptions,
       ...allOptions,
       tokenPath,
       credentials
     });
   } else {
-    data = await captureSnapshot(page, {
+    data = await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
       tokenPath,

@@ -2,6 +2,7 @@ import cli from '@battis/qui-cli';
 import * as common from '../../../common.js';
 
 export const options = {
+  ...common.args.options,
   fromDate: {
     description: `Starting date for date-based filter where relevant (default is today's date: ${cli.colors.quotedValue(`"${new Date().toLocaleDateString('en-US')}"`)})`,
     default: new Date().toLocaleDateString('en-US')
@@ -27,6 +28,5 @@ export const options = {
   },
   groupsPath: {
     description: `Path to output directory or file to save filtered groups listing (include placeholder ${cli.colors.quotedValue('"%TIMESTAMP%"')} to specify its location, otherwise it is added automatically when needed to avoid overwriting existing files)`
-  },
-  ...common.args.options
+  }
 };

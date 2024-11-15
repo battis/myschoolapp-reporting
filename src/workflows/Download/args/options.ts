@@ -1,7 +1,6 @@
 import cli from '@battis/qui-cli';
 import path from 'node:path';
 import * as common from '../../../common.js';
-import * as snapshot from '../../snapshot.js';
 
 const defaultOutputPath = path.join(
   process.cwd(),
@@ -9,7 +8,7 @@ const defaultOutputPath = path.join(
 );
 
 export const options = {
-  ...snapshot.args.options,
+  ...common.args.options,
   outputPath: {
     ...common.args.options.outputPath,
     description: `${common.args.options.outputPath.description} (defaults to timestamped export directory, ${cli.colors.quotedValue(`"${defaultOutputPath}"`)})`,

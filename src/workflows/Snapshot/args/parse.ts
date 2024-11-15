@@ -1,10 +1,10 @@
 import * as common from '../../../common.js';
-import { captureAllSnapshots, captureSnapshot } from '../Snapshot.js';
+import { capture, captureAll } from '../Snapshot.js';
 
 type Result = {
-  snapshotOptions: Parameters<typeof captureSnapshot>[1];
+  snapshotOptions: Parameters<typeof capture>[1];
   all: boolean;
-  allOptions: Parameters<typeof captureAllSnapshots>[1];
+  allOptions: Parameters<typeof captureAll>[1];
 } & ReturnType<typeof common.args.parse> &
   ReturnType<typeof common.OAuth2.args.parse>;
 

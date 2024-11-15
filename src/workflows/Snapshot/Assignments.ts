@@ -2,6 +2,7 @@ import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { AssignmentList } from '../../Blackbaud/SKY/Assignments.js';
+import * as common from '../../common.js';
 import { Credentials } from '../../common/OAuth2/authorize.js';
 import { getToken } from '../../common/OAuth2/refresh.js';
 
@@ -10,7 +11,16 @@ type Options = {
   credentials: Credentials;
 };
 
-export async function captureAssignments(
+export const MissingCredentials = new Error(
+  `Assignments cannot be captured without valid OAuth 2.0 credentials. ${Object.keys(
+    common.OAuth2.args.options
+  )
+    .map(cli.colors.value)
+    .join(', ')
+    .replace(/, ([^,]+)$/, 'and $1')} must all be configured.`
+);
+
+export async function capture(
   page: Page,
   groupId: string,
   _: URLSearchParams,
@@ -19,6 +29,11 @@ export async function captureAssignments(
   const spinner = cli.spinner();
   spinner.start('Capturing assignments');
   const tokens = await getToken(tokenPath, credentials);
+  if (!tokens) {
+    throw new Error(
+      `Could not acquire access token using provided credentials`
+    );
+  }
   const { client_id, client_secret, redirect_uri, ...subscriptionHeader } =
     credentials;
   const assignmentList: AssignmentList = await (

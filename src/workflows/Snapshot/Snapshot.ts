@@ -4,49 +4,66 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
 import * as common from '../../common.js';
-import { captureAssignments } from './Assignments.js';
-import { captureBulletinBoard } from './BulletinBoard.js';
-import { captureGradebook } from './Gradebook.js';
-import { allGroups } from './Groups.js';
-import { captureSectionInfo } from './SectionInfo.js';
-import { captureTopics } from './Topics.js';
+import * as Assignments from './Assignments.js';
+import * as BulletinBoard from './BulletinBoard.js';
+import * as Gradebook from './Gradebook.js';
+import * as Groups from './Groups.js';
+import * as SectionInfo from './SectionInfo.js';
+import * as Topics from './Topics.js';
 
-export type Snapshot = {
-  Timestamp: Date;
-  CapturedBy: EmailString;
-  SectionInfo: Awaited<ReturnType<typeof captureSectionInfo>>;
-  GroupId: string;
-  BulletinBoard?: Awaited<ReturnType<typeof captureBulletinBoard>>;
-  Topics?: Awaited<ReturnType<typeof captureTopics>>;
-  Assignments?: Awaited<ReturnType<typeof captureAssignments>>;
-  Gradebook?: Awaited<ReturnType<typeof captureGradebook>>;
+type Metadata = {
+  Host: string;
+  User: string;
+  Start: Date;
+  Finish: Date;
 };
 
-type SnapshotOptions = {
-  url?: string;
-  groupId?: string;
+export type Data = {
+  Metadata: Metadata;
+  SectionInfo: Awaited<ReturnType<typeof SectionInfo.capture>>;
+  GroupId: string;
+  BulletinBoard?: Awaited<ReturnType<typeof BulletinBoard.capture>>;
+  Topics?: Awaited<ReturnType<typeof Topics.capture>>;
+  Assignments?: Awaited<ReturnType<typeof Assignments.capture>>;
+  Gradebook?: Awaited<ReturnType<typeof Gradebook.capture>>;
+};
+
+type BaseOptions = {
   bulletinBoard?: boolean;
   topics?: boolean;
   assignments?: boolean;
   gradebook?: boolean;
   tokenPath?: string;
-  credentials?: Parameters<typeof common.OAuth2.getToken>[1];
+  credentials?: common.OAuth2.Credentials;
   params?: URLSearchParams;
 };
 
-export async function captureSnapshot(
+type SingleOptions = BaseOptions & {
+  url?: string;
+  groupId?: string;
+};
+
+type AllOptions = BaseOptions & {
+  association?: string;
+  termsOffered?: string;
+  batchSize?: number;
+  groupsPath?: string;
+  pretty?: boolean;
+};
+
+export async function capture(
   page: Page,
   {
     url,
     groupId,
-    bulletinBoard = true,
-    topics = true,
-    assignments = true,
-    gradebook = true,
+    bulletinBoard,
+    topics,
+    assignments,
+    gradebook,
     params = new URLSearchParams(),
     tokenPath,
     credentials
-  }: SnapshotOptions
+  }: SingleOptions
 ) {
   const spinner = cli.spinner();
   spinner.start('Identifying section');
@@ -55,34 +72,39 @@ export async function captureSnapshot(
   }
   if (groupId) {
     spinner.start(`Capturing section ID ${groupId}`);
-    const [SectionInfo, BulletinBoard, Topics, Assignments, Gradebook] =
-      await Promise.all([
-        captureSectionInfo(page, groupId),
-        bulletinBoard ? captureBulletinBoard(page, groupId, params) : undefined,
-        topics ? captureTopics(page, groupId, params) : undefined,
-        assignments && tokenPath && credentials
-          ? captureAssignments(page, groupId, params, {
-              tokenPath,
-              credentials
-            })
-          : undefined,
-        gradebook ? captureGradebook(page, groupId, params) : undefined
-      ]);
-    if (assignments && (!tokenPath || !credentials)) {
-      spinner.fail('Assignments not captured (missing OAuth 2.0 credentials)');
+    if (!tokenPath || !credentials) {
+      throw Assignments.MissingCredentials;
     }
+    const [s, b, t, a, g] = await Promise.all([
+      SectionInfo.capture(page, groupId),
+      bulletinBoard ? BulletinBoard.capture(page, groupId, params) : undefined,
+      topics ? Topics.capture(page, groupId, params) : undefined,
+      assignments
+        ? Assignments.capture(page, groupId, params, {
+            tokenPath,
+            credentials
+          })
+        : undefined,
+      gradebook ? Gradebook.capture(page, groupId, params) : undefined
+    ]);
 
-    const snapshot: Snapshot = {
-      Timestamp: new Date(),
-      CapturedBy: await page.evaluate(
-        async () => (await BBAuthClient.BBAuth.getDecodedToken(null)).email
-      ),
+    const snapshot: Data = {
+      Metadata: {
+        Host: url
+          ? new URL(url).hostname
+          : await page.evaluate(() => window.location.hostname),
+        User: await page.evaluate(
+          async () => (await BBAuthClient.BBAuth.getDecodedToken(null)).email
+        ),
+        Start: new Date(),
+        Finish: new Date()
+      },
       GroupId: groupId,
-      SectionInfo,
-      BulletinBoard,
-      Topics,
-      Assignments,
-      Gradebook
+      SectionInfo: s,
+      BulletinBoard: b,
+      Topics: t,
+      Assignments: a,
+      Gradebook: g
     };
 
     if ('Teacher' in snapshot.SectionInfo) {
@@ -92,6 +114,7 @@ export async function captureSnapshot(
     } else {
       spinner.warn(`Captured snapshot of section ${groupId} with errors`);
     }
+    snapshot.Metadata.Finish = new Date();
     return snapshot;
   } else {
     spinner.fail('Unknown group ID');
@@ -99,38 +122,27 @@ export async function captureSnapshot(
   }
 }
 
-type AllSnapshotsOptions = {
-  association?: string;
-  termsOffered?: string;
-  groupsPath?: string;
-  batchSize?: number;
-  bulletinBoard?: boolean;
-  topics?: boolean;
-  gradebook?: boolean;
-  pretty?: boolean;
-  params?: URLSearchParams;
-};
-
-export async function captureAllSnapshots(
+export async function captureAll(
   page: Page,
   {
     association,
     termsOffered,
     groupsPath,
-    batchSize = 25,
-    bulletinBoard = true,
-    topics = true,
+    batchSize = 10,
+    bulletinBoard,
+    topics,
+    assignments,
+    gradebook,
     params = new URLSearchParams(),
-    gradebook = true,
-    pretty = false,
+    pretty,
     tokenPath,
     credentials
-  }: AllSnapshotsOptions
+  }: AllOptions
 ) {
   const session = crypto.randomUUID();
   const _assoc = (association || '').split(',').map((t) => t.trim());
   const _terms = (termsOffered || '').split(',').map((t) => t.trim());
-  const groups = (await allGroups(page)).filter(
+  const groups = (await Groups.all(page)).filter(
     (group) =>
       (association === undefined || _assoc.includes(group.association)) &&
       (termsOffered === undefined ||
@@ -148,11 +160,18 @@ export async function captureAllSnapshots(
     });
   }
 
-  const data: Snapshot[] = [];
+  const data: Data[] = [];
   await fs.mkdir(`/tmp/snapshot/${session}`, { recursive: true });
   const zeros = new Array((groups.length + '').length).fill(0).join('');
   function pad(n: number) {
     return (zeros + n).slice(-zeros.length);
+  }
+  if (assignments) {
+    if (!tokenPath || !credentials) {
+      throw Assignments.MissingCredentials;
+    }
+    // if authorization is required, do so before concurrency starts
+    await common.OAuth2.getToken(tokenPath, credentials);
   }
   for (let i = 0; i < groups.length; i += batchSize) {
     const batch = groups.slice(i, i + batchSize);
@@ -168,10 +187,11 @@ export async function captureAllSnapshots(
     );
     await Promise.allSettled(
       batch.map(async (group, n) => {
-        const snapshot = await captureSnapshot(page, {
+        const snapshot = await capture(page, {
           groupId: group.lead_pk.toString(),
           bulletinBoard,
           topics,
+          assignments,
           gradebook,
           params,
           tokenPath,

@@ -1,11 +1,9 @@
-#!/usr/bin/env node
-
 import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
-import { args, downloadSnapshot } from '../commands/download.js';
-import * as snapshot from '../commands/snapshot.js';
-import * as common from '../common.js';
+import * as common from '../../common.js';
+import * as Download from '../../workflows/Download.js';
+import * as Snapshot from '../../workflows/Snapshot.js';
 
 (async () => {
   let {
@@ -14,21 +12,20 @@ import * as common from '../common.js';
   } = cli.init({
     args: {
       requirePositionals: 1,
-      ...args
+      flags: { ...Snapshot.args.flags, ...Download.args.flags },
+      options: { ...Snapshot.args.options, ...Download.args.options }
     }
   });
 
   const {
     puppeteerOptions,
-    snapshotOptions,
     downloadOptions,
-    all,
-    allOptions,
     outputOptions: { outputPath: op, pretty },
     quit,
     tokenPath,
     credentials
-  } = args.parse(values);
+  } = Download.args.parse(values);
+  const { snapshotOptions, all, allOptions } = Snapshot.args.parse(values);
 
   let outputPath = path.resolve(process.cwd(), op || '.');
 
@@ -38,26 +35,22 @@ import * as common from '../common.js';
 
   const spinner = cli.spinner();
   if (all) {
-    common.OAuth2.getToken(tokenPath, credentials);
     spinner.start('Indexing courses');
-    const snapshots = await snapshot.captureAllSnapshots(page, {
+    const snapshots = await Snapshot.captureAll(page, {
       url,
       ...snapshotOptions,
       ...allOptions
     });
     fs.mkdirSync(outputPath, { recursive: true });
     for (const snapshot of snapshots) {
-      await downloadSnapshot(snapshot, outputPath, {
-        url,
+      await Download.supportingFiles(snapshot, outputPath, {
         pretty,
-        ...downloadOptions,
-        tokenPath,
-        credentials
+        ...downloadOptions
       });
     }
   } else {
     spinner.start(`Indexing course`);
-    const s = await snapshot.captureSnapshot(page, {
+    const s = await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
       tokenPath,
@@ -65,14 +58,11 @@ import * as common from '../common.js';
     });
     if (s) {
       spinner.succeed(
-        `${snapshot.isApiError(s.SectionInfo) ? 'Course' : `${s.SectionInfo.GroupName} (ID ${s.SectionInfo.Id})`} indexed`
+        `${Snapshot.isApiError(s.SectionInfo) ? 'Course' : `${s.SectionInfo.GroupName} (ID ${s.SectionInfo.Id})`} indexed`
       );
-      await downloadSnapshot(s, outputPath, {
-        url,
+      await Download.supportingFiles(s, outputPath, {
         pretty,
-        ...downloadOptions,
-        tokenPath,
-        credentials
+        ...downloadOptions
       });
     } else {
       spinner.fail(

@@ -1,6 +1,6 @@
-import * as snapshot from '../../snapshot.js';
+import * as common from '../../../common.js';
 
-type Result = ReturnType<typeof snapshot.args.parse> & {
+type Result = ReturnType<typeof common.args.parse> & {
   downloadOptions: {
     include?: RegExp[];
     exclude?: RegExp[];
@@ -15,7 +15,7 @@ function stringToRegExpArray(arg: string): RegExp[] | undefined {
 
 export function parse(values: Record<string, string>): Result {
   return {
-    ...snapshot.args.parse(values),
+    ...common.args.parse(values),
     downloadOptions: {
       include: stringToRegExpArray(values.include),
       exclude: stringToRegExpArray(values.exclude)

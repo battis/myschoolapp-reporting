@@ -11,11 +11,11 @@ import { tokenUrl } from './URLs.js';
 
 export async function getToken(tokenPath: string, credentials: Credentials) {
   const resolvedPath = path.resolve(process.cwd(), tokenPath);
-  let tokens: StorableToken;
+  let tokens: StorableToken | undefined = undefined;
   let refreshed = true;
   if (fs.existsSync(resolvedPath)) {
     tokens = JSON.parse(fs.readFileSync(resolvedPath).toString());
-    if (hasExpired(tokens.timestamp, tokens.expires_in)) {
+    if (tokens && hasExpired(tokens.timestamp, tokens.expires_in)) {
       tokens = await refreshToken(tokens, credentials);
     } else {
       refreshed = false;
@@ -35,7 +35,7 @@ export async function getToken(tokenPath: string, credentials: Credentials) {
     }
   }
 
-  if (refreshed) {
+  if (tokens && refreshed) {
     storeTokens(tokenPath, tokens);
   }
 

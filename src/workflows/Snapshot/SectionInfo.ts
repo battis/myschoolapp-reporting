@@ -3,10 +3,12 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-export async function captureSectionInfo(
+export type Data = api.DataDirect.SectionInfo;
+
+export async function capture(
   page: Page,
   groupId: string
-): Promise<api.DataDirect.SectionInfo | ApiError> {
+): Promise<Data | ApiError> {
   const spinner = cli.spinner();
   spinner.start('Capturing section info');
   try {

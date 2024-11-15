@@ -2,6 +2,7 @@ import cli from '@battis/qui-cli';
 import * as common from '../../../common.js';
 
 export const flags = {
+  ...common.args.flags,
   all: {
     short: 'A',
     description: `Capture all sections (default: ${cli.colors.value('false')}, positional argument is used to identify MySchoolApp instance)`,
@@ -35,13 +36,17 @@ export const flags = {
   },
   assignments: {
     short: 'a',
-    description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${cli.colors.value('clientId')}, ${cli.colors.value('clientSecret')}, ${cli.colors.value('redirectUri')}, and ${cli.colors.value('subscriptionKey')} options set)`,
+    description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${Object.keys(
+      common.OAuth2.args.options
+    )
+      .map((option) => cli.colors.value(option))
+      .join(', ')
+      .replace(/, ([^,]+)$/, ' and $1')} options set)`,
     default: true
   },
   gradebook: {
     description: `Include the course Gradebook in the snapshot (default ${cli.colors.value('true')})`,
     short: 'g',
     default: true
-  },
-  ...common.args.flags
+  }
 };

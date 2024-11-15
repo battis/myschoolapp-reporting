@@ -13,8 +13,7 @@
   },
   "type": "module",
   "bin": {
-    "export": "./dist/bin/export.js",
-    "snapshot": "./dist/bin/snapshot.js"
+    "msar": "./dist/bin/msar.js"
   },
   "scripts": {
     "clean": "del ./dist",
@@ -38,7 +37,7 @@
     "expressionparser": "^1.1.5",
     "json-2-csv": "^5.5.6",
     "open": "^10.1.0",
-    "puppeteer": "^23.7.1"
+    "puppeteer": "^23.8.0"
   },
   "devDependencies": {
     "@battis/eslint-config": "latest",

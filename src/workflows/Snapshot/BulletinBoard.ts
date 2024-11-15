@@ -3,16 +3,16 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-type BulletinBoard = (api.DataDirect.BulletinBoardContent & {
+export type Data = (api.DataDirect.BulletinBoardContent & {
   Content?: api.DataDirect.ContentItem | api.DataDirect.ContentItem[];
   ContentType?: api.DataDirect.ContentType;
 })[];
 
-export async function captureBulletinBoard(
+export async function capture(
   page: Page,
   groupId: string,
   params: URLSearchParams
-): Promise<BulletinBoard | ApiError> {
+): Promise<Data | ApiError> {
   const spinner = cli.spinner();
   spinner.start('Capturing bulletin board');
   try {
@@ -29,7 +29,7 @@ export async function captureBulletinBoard(
           { ContentId: 408, Content: 'Horizontal Line' },
           { ContentId: 407, Content: 'Spacer' }
         );
-        const items: BulletinBoard = await (
+        const items: Data = await (
           await fetch(
             `https://${host}/api/datadirect/BulletinBoardContentGet/?format=json&sectionId=${groupId}&associationId=1&pendingInd=false`
           )

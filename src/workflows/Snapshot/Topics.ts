@@ -3,18 +3,18 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { ApiError } from './ApiError.js';
 
-type Topic = api.DataDirect.SectionTopic & {
+type Data = api.DataDirect.SectionTopic & {
   Content?: (api.DataDirect.ContentItem & {
     ObjectType?: api.DataDirect.ObjectType;
     Content?: any; // FIXME type
   })[];
 };
 
-export async function captureTopics(
+export async function capture(
   page: Page,
   groupId: string,
   params: URLSearchParams
-): Promise<Topic[] | ApiError> {
+): Promise<Data[] | ApiError> {
   const spinner = cli.spinner();
   spinner.start('Capturing topics');
   try {
@@ -24,7 +24,7 @@ export async function captureTopics(
         const possibleContent: api.DataDirect.ObjectType[] = await (
           await fetch(`https://${host}/api/DataDirect/TopicContentTypesGet`)
         ).json();
-        const topics: Topic[] = await (
+        const topics: Data[] = await (
           await fetch(
             `https://${host}/api/datadirect/sectiontopicsget/${groupId}/?format=json&active=true&future=false&expired=false&sharedTopics=false`
           )
