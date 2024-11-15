@@ -32,7 +32,7 @@ npm i myschoolapp-reporting
 This tool uses a command-and-verb model, in which you invoke the command (`msar`: **M**y**S**chool**A**pp **R**eporting) and give it a verb with the arguments that are desired. The command is invoked using the Node command runner `npx`. For example:
 
 ```sh
-npx msar snapshot --all
+npx msar snapshot --all https://example.myschoolapp.com
 ```
 
 At present the following verbs are implemented:
@@ -57,13 +57,13 @@ npx snapshot --help
 To capture the course information for a single course:
 
 ```sh
-npx msar snapshot https://groton.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
+npx msar snapshot https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
 ```
 
 If you store your login credentials in 1Passwrd, you can pass username and password using `op` cli tool (`$OP_ITEM` environment variable is the item identifier in 1Password of the desired login):
 
 ```sh
-npx msar snapshot -u "$(op item get $OP_ITEM --fields username)" -p "$(op item get $OP_ITEM --fields password --reveal)" --sso "entra-id" https://groton.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
+npx msar snapshot -u "$(op item get $OP_ITEM --fields username)" -p "$(op item get $OP_ITEM --fields password --reveal)" --sso "entra-id" https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
 ```
 
 The only single sign-on/multi-factor authentication interaction that is currently scripted is Entra ID (for my personal convenience). All other sign-ons and MFA interaction will require running the app _not_ in headless mode (as it is by default, or by invoking it with the `--no-headless` flag) to allow for an interactive login.
