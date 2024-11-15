@@ -13,7 +13,7 @@ type Options = {
 
 export const MissingCredentials = new Error(
   `Assignments cannot be captured without valid OAuth 2.0 credentials. ${common.oxfordComma(
-    Object.keys(common.OAuth2.args.options).map(cli.colors.value)
+    Object.keys(common.OAuth2.args.options).map((key) => cli.colors.value(key))
   )} must all be configured.`
 );
 
