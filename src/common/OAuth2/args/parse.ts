@@ -1,11 +1,11 @@
 import { Credentials } from '../authorize.js';
 
-type Result = {
+export type Parsed = {
   credentials?: Credentials;
   tokenPath?: string;
 };
 
-export function parse(values: Record<string, string>): Result {
+export function parse(values: Record<string, string>): Parsed {
   let credentials = {
     client_id: values.clientId || process.env.CLIENT_ID,
     client_secret: values.clientSecret || process.env.CLIENT_SECRET,

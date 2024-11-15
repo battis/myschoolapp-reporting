@@ -9,17 +9,18 @@ import * as Snapshot from '../Snapshot.js';
 
 const cache: Record<string, string> = {};
 
-type SupportingFilesOptions = {
-  pretty?: boolean;
+type BaseOptions = {
   include?: RegExp[];
   exclude?: RegExp[];
 };
 
-type DownloadOptions = {
+type SupportingFilesOptions = BaseOptions & {
+  pretty?: boolean;
+};
+
+type DownloadOptions = BaseOptions & {
   host: string;
   pathToComponent: string;
-  include?: RegExp[];
-  exclude?: RegExp[];
 };
 
 export async function supportingFiles(

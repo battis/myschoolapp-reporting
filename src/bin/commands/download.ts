@@ -20,6 +20,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
 
   const {
     downloadOptions,
+    puppeteerOptions,
     outputOptions: { pretty }
   } = Download.args.parse(values);
 
@@ -48,6 +49,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   for (const snapshot of snapshots) {
     await Download.supportingFiles(snapshot, outputPath, {
       ...downloadOptions,
+      ...puppeteerOptions,
       pretty
     });
   }
