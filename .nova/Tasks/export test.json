@@ -1,9 +1,0 @@
-{
-  "actions" : {
-    "run" : {
-      "enabled" : true,
-      "script" : "source .env\ntsx .\/src\/bin\/msar.ts export -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var \"$URL\""
-    }
-  },
-  "openLogOnRun" : "start"
-}

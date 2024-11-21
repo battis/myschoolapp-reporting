@@ -1,0 +1,14 @@
+{
+  "actions" : {
+    "build" : {
+      "enabled" : true,
+      "script" : "pnpm run build"
+    },
+    "run" : {
+      "enabled" : true,
+      "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var --groupsPath .\/var --all \"$URL\""
+    }
+  },
+  "buildBeforeRunning" : true,
+  "openLogOnRun" : "start"
+}
