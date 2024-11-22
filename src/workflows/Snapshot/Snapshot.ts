@@ -35,10 +35,8 @@ type BaseOptions = {
   topics?: boolean;
   assignments?: boolean;
   gradebook?: boolean;
-  tokenPath?: string;
-  credentials?: common.OAuth2.Credentials;
   params?: URLSearchParams;
-};
+} & common.OAuth2.args.Parsed['oauthOptions'];
 
 type SingleOptions = BaseOptions & {
   url?: string;
@@ -63,8 +61,7 @@ export async function capture(
     assignments,
     gradebook,
     params = new URLSearchParams(),
-    tokenPath,
-    credentials
+    ...oauthOptions
   }: SingleOptions
 ) {
   const spinner = cli.spinner();
@@ -72,20 +69,15 @@ export async function capture(
   if (url && groupId === undefined) {
     groupId = (url.match(/https:\/\/[^0-9]+(\d+)/) || { 1: undefined })[1];
   }
+
   if (groupId) {
     spinner.start(`Capturing section ID ${groupId}`);
-    if (!tokenPath || !credentials) {
-      throw Assignments.MissingCredentials;
-    }
     const [s, b, t, a, g] = await Promise.all([
       SectionInfo.capture(page, groupId),
       bulletinBoard ? BulletinBoard.capture(page, groupId, params) : undefined,
       topics ? Topics.capture(page, groupId, params) : undefined,
       assignments
-        ? Assignments.capture(page, groupId, params, {
-            tokenPath,
-            credentials
-          })
+        ? Assignments.capture(page, groupId, params, { ...oauthOptions })
         : undefined,
       gradebook ? Gradebook.capture(page, groupId, params) : undefined
     ]);
@@ -137,8 +129,7 @@ export async function captureAll(
     gradebook,
     params = new URLSearchParams(),
     pretty,
-    tokenPath,
-    credentials
+    ...oauthOptions
   }: AllOptions
 ) {
   const session = crypto.randomUUID();
@@ -169,13 +160,7 @@ export async function captureAll(
   function pad(n: number) {
     return (zeros + n).slice(-zeros.length);
   }
-  if (assignments) {
-    if (!tokenPath || !credentials) {
-      throw Assignments.MissingCredentials;
-    }
-    // if authorization is required, do so before concurrency starts
-    await common.OAuth2.getToken(tokenPath, credentials);
-  }
+
   for (let i = 0; i < groups.length; i += batchSize) {
     const batch = groups.slice(i, i + batchSize);
     const host = new URL(page.url()).host;
@@ -197,8 +182,7 @@ export async function captureAll(
           assignments,
           gradebook,
           params,
-          tokenPath,
-          credentials
+          ...oauthOptions
         });
         await fs.writeFile(
           `${TEMP}/${session}/${pad(i + n)}.json`,

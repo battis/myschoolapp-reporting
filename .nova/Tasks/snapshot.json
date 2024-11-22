@@ -1,14 +1,36 @@
 {
   "actions" : {
     "build" : {
-      "enabled" : true,
-      "script" : "pnpm run build"
+      "postActions" : [
+        {
+          "action" : "build",
+          "taskName" : "build",
+          "type" : "runTask"
+        }
+      ]
     },
     "run" : {
-      "enabled" : true,
-      "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var --groupsPath .\/var --all \"$URL\""
+      "preActions" : [
+        {
+          "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var \"$URL\"",
+          "type" : "runScript"
+        }
+      ]
     }
   },
   "buildBeforeRunning" : true,
+  "extension" : {
+    "identifier" : "panic.JavaScript",
+    "name" : "JavaScript"
+  },
+  "extensionTemplate" : "nodeDebug",
+  "extensionValues" : {
+    "launchArgs" : [
+
+    ],
+    "request" : "attach",
+    "scriptPath" : "dist\/bin\/msar.js",
+    "stopOnEntry" : false
+  },
   "openLogOnRun" : "start"
 }

@@ -19,12 +19,11 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   });
 
   const {
+    oauthOptions,
     puppeteerOptions,
     downloadOptions,
     outputOptions: { outputPath: op, pretty },
-    quit,
-    tokenPath,
-    credentials
+    quit
   } = Download.args.parse(values);
   const { snapshotOptions, all, allOptions } = Snapshot.args.parse(values);
 
@@ -54,8 +53,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     const s = await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
-      tokenPath,
-      credentials
+      ...oauthOptions
     });
     if (s) {
       spinner.succeed(

@@ -16,14 +16,13 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   });
 
   const {
+    oauthOptions,
     puppeteerOptions,
     snapshotOptions,
     all,
     allOptions,
     outputOptions: { outputPath, pretty },
-    quit,
-    tokenPath,
-    credentials
+    quit
   } = Snapshot.args.parse(values);
 
   const page = await common.puppeteer.openURL(url, puppeteerOptions);
@@ -35,24 +34,16 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   let data;
 
   if (all) {
-    if (snapshotOptions.assignments) {
-      if (!tokenPath || !credentials) {
-        throw new Error('OAuth 2.0 credentials required');
-      }
-      await common.OAuth2.getToken(tokenPath, credentials);
-    }
     data = await Snapshot.captureAll(page, {
       ...snapshotOptions,
       ...allOptions,
-      tokenPath,
-      credentials
+      ...oauthOptions
     });
   } else {
     data = await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
-      tokenPath,
-      credentials
+      ...oauthOptions
     });
   }
 

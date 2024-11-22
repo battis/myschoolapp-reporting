@@ -3,43 +3,30 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 import { AssignmentList } from '../../Blackbaud/SKY/Assignments.js';
 import * as common from '../../common.js';
-import { Credentials } from '../../common/OAuth2/authorize.js';
-import { getToken } from '../../common/OAuth2/refresh.js';
 
-type Options = {
-  tokenPath: string;
-  credentials: Credentials;
-};
-
-export const MissingCredentials = new Error(
-  `Assignments cannot be captured without valid OAuth 2.0 credentials. ${common.oxfordComma(
-    Object.keys(common.OAuth2.args.options).map((key) => cli.colors.value(key))
-  )} must all be configured.`
-);
+type Options = common.OAuth2.args.Parsed['oauthOptions'];
 
 export async function capture(
   page: Page,
   groupId: string,
   _: URLSearchParams,
-  { tokenPath, credentials }: Options
+  options: Options
 ) {
   const spinner = cli.spinner();
   spinner.start('Capturing assignments');
-  const tokens = await getToken(tokenPath, credentials);
-  if (!tokens) {
+  const token = await common.OAuth2.getToken(options);
+  if (!token) {
     throw new Error(
-      `Could not acquire access token using provided credentials`
+      `Could not acquire SKY API access token using provided OAuth 2.0 credentials`
     );
   }
-  const { client_id, client_secret, redirect_uri, ...subscriptionHeader } =
-    credentials;
   const assignmentList: AssignmentList = await (
     await fetch(
       `https://api.sky.blackbaud.com/school/v1/academics/sections/${groupId}/assignments`,
       {
         headers: {
-          ...subscriptionHeader,
-          Authorization: `Bearer ${tokens.access_token}`
+          ...options.headers,
+          Authorization: `Bearer ${token.access_token}`
         }
       }
     )

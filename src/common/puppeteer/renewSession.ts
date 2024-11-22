@@ -1,7 +1,7 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 
-let active = false;
+let active = true;
 
 export function renewSession(page: Page, delay = 240000) {
   const spinner = cli.spinner();

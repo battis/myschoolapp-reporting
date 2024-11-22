@@ -1,28 +1,22 @@
-import { Credentials } from '../authorize.js';
+import * as oauth from 'oauth2-cli';
 
 export type Parsed = {
-  credentials?: Credentials;
-  tokenPath?: string;
+  oauthOptions: Partial<ConstructorParameters<typeof oauth.TokenManager>[0]>;
 };
 
 export function parse(values: Record<string, string>): Parsed {
-  let credentials = {
-    client_id: values.clientId || process.env.CLIENT_ID,
-    client_secret: values.clientSecret || process.env.CLIENT_SECRET,
-    redirect_uri: values.redirectUri || process.env.REDIRECT_URI,
-    'Bb-api-subscription-key':
-      values.subscriptionKey || process.env.SUBSCRIPTION_KEY
-  };
-
   return {
-    credentials:
-      // all credentials must be defined to return any credentials
-      credentials.client_id &&
-      credentials.client_secret &&
-      credentials.redirect_uri &&
-      credentials['Bb-api-subscription-key']
-        ? (credentials as Credentials)
-        : undefined,
-    tokenPath: values.tokenPath
+    oauthOptions: {
+      client_id: values.clientId || process.env.CLIENT_ID,
+      client_secret: values.clientSecret || process.env.CLIENT_SECRET,
+      redirect_uri: values.redirectUri || process.env.REDIRECT_URI,
+      headers: {
+        'Bb-api-subscription-key':
+          values.subscriptionKey || process.env.SUBSCRIPTION_KEY || ''
+      },
+      authorization_endpoint: 'https://app.blackbaud.com/oauth/authorize',
+      token_endpoint: 'https://oauth2.sky.blackbaud.com/token',
+      store: values.tokenPath
+    }
   };
 }

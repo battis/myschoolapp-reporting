@@ -4,7 +4,8 @@
     "lib": ["dom"],
     "outDir": "./dist",
     "module": "nodenext",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
   "include": ["./src"]
 }
