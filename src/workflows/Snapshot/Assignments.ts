@@ -20,6 +20,7 @@ export async function capture(
       `Could not acquire SKY API access token using provided OAuth 2.0 credentials`
     );
   }
+
   const assignmentList: AssignmentList = await (
     await fetch(
       `https://api.sky.blackbaud.com/school/v1/academics/sections/${groupId}/assignments`,

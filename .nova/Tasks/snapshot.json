@@ -10,27 +10,10 @@
       ]
     },
     "run" : {
-      "preActions" : [
-        {
-          "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso \"entra-id\" --outputPath .\/var \"$URL\"",
-          "type" : "runScript"
-        }
-      ]
+      "enabled" : true,
+      "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --outputPath \"$OUT\" \"$URL\"\n"
     }
   },
   "buildBeforeRunning" : true,
-  "extension" : {
-    "identifier" : "panic.JavaScript",
-    "name" : "JavaScript"
-  },
-  "extensionTemplate" : "nodeDebug",
-  "extensionValues" : {
-    "launchArgs" : [
-
-    ],
-    "request" : "attach",
-    "scriptPath" : "dist\/bin\/msar.js",
-    "stopOnEntry" : false
-  },
   "openLogOnRun" : "start"
 }

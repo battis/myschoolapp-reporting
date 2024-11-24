@@ -77,7 +77,7 @@ export async function capture(
       bulletinBoard ? BulletinBoard.capture(page, groupId, params) : undefined,
       topics ? Topics.capture(page, groupId, params) : undefined,
       assignments
-        ? Assignments.capture(page, groupId, params, { ...oauthOptions })
+        ? Assignments.capture(page, groupId, params, oauthOptions)
         : undefined,
       gradebook ? Gradebook.capture(page, groupId, params) : undefined
     ]);
@@ -123,13 +123,8 @@ export async function captureAll(
     termsOffered,
     groupsPath,
     batchSize = 10,
-    bulletinBoard,
-    topics,
-    assignments,
-    gradebook,
-    params = new URLSearchParams(),
     pretty,
-    ...oauthOptions
+    ...options
   }: AllOptions
 ) {
   const session = crypto.randomUUID();
@@ -177,12 +172,7 @@ export async function captureAll(
       batch.map(async (group, n) => {
         const snapshot = await capture(page, {
           groupId: group.lead_pk.toString(),
-          bulletinBoard,
-          topics,
-          assignments,
-          gradebook,
-          params,
-          ...oauthOptions
+          ...options
         });
         await fs.writeFile(
           `${TEMP}/${session}/${pad(i + n)}.json`,

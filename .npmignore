@@ -1,4 +1,5 @@
 .*
+*.map
 /pnpm-lock.yaml
 /tsconfig.json
 /src/

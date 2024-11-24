@@ -31,7 +31,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
 
   const page = await common.puppeteer.openURL(url, puppeteerOptions);
   await common.puppeteer.login(page, values);
-  common.puppeteer.renewSession(page);
+  common.puppeteer.renewSession.start(page);
 
   const spinner = cli.spinner();
   if (all) {
@@ -70,7 +70,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     }
   }
 
-  common.puppeteer.stopRenewingSession();
+  common.puppeteer.renewSession.stop(page);
   if (quit) {
     await page.browser().close();
   }

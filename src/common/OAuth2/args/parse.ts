@@ -11,7 +11,7 @@ export function parse(values: Record<string, string>): Parsed {
       client_secret: values.clientSecret || process.env.CLIENT_SECRET,
       redirect_uri: values.redirectUri || process.env.REDIRECT_URI,
       headers: {
-        'Bb-api-subscription-key':
+        'Bb-Api-Subscription-Key':
           values.subscriptionKey || process.env.SUBSCRIPTION_KEY || ''
       },
       authorization_endpoint: 'https://app.blackbaud.com/oauth/authorize',

@@ -29,7 +29,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   await common.puppeteer.login(page, values);
   values.username = '';
   values.password = '';
-  common.puppeteer.renewSession(page);
+  common.puppeteer.renewSession.start(page);
 
   let data;
 
@@ -47,7 +47,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     });
   }
 
-  common.puppeteer.stopRenewingSession();
+  common.puppeteer.renewSession.stop(page);
   if (quit) {
     await page.browser().close();
   }
