@@ -32,7 +32,7 @@
       "-p",
       "$PASSWORD",
       "--sso",
-      "entra-id",
+      "$SSO",
       "--outPath",
       "$OUT",
       "$URL"
