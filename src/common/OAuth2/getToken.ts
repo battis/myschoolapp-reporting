@@ -31,7 +31,7 @@ function verify(
   if (!options.redirect_uri) {
     throw new Error(`${cli.colors.value('redirect_uri')} must be defined`);
   }
-  if (!options.headers || (options.headers['Bb-Api-Subscription-Key'] = '')) {
+  if (!options.headers || options.headers['Bb-Api-Subscription-Key'] === '') {
     throw new Error(
       `Header ${cli.colors.value('Bb-Api-Subscription-Key')} must be defined`
     );

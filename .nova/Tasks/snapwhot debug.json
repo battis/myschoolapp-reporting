@@ -1,0 +1,20 @@
+{
+  "actions" : {
+    "run" : {
+      "preActions" : [
+        {
+          "script" : "source .env\nnode --inspect-wait .\/dist\/bin\/msar.js snapshot -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso $SSO --outputPath \"$OUT\" \"$URL\"",
+          "type" : "runScript"
+        }
+      ]
+    }
+  },
+  "extension" : {
+    "identifier" : "panic.JavaScript",
+    "name" : "JavaScript"
+  },
+  "extensionTemplate" : "chromeDebug",
+  "extensionValues" : {
+    "request" : "attach"
+  }
+}
