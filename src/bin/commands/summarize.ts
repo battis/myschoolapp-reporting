@@ -17,17 +17,20 @@ type Summary = api.DataDirect.SectionInfo & {
   } = cli.init({
     args: {
       requirePositionals: true,
-      description:
-        'Summarize an existing snapshot file as a CSV file, to bring into existing spreadsheet or other analysis software. This command expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output file.'
+      man: [
+        {
+          text: 'Summarize an existing snapshot file as a CSV file, to bring into existing spreadsheet or other analysis software. This command expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output file.'
+        }
+      ]
     }
   });
 
   if (!outputPath) {
-    outputPath = snapshotPath.replace(/\.json$/, '.csv');
+    outputPath = snapshotPath!.replace(/\.json$/, '.csv');
   }
 
   const json = JSON.parse(
-    fs.readFileSync(path.resolve(process.cwd(), snapshotPath)).toString()
+    fs.readFileSync(path.resolve(process.cwd(), snapshotPath!)).toString()
   );
   const snapshots: Snapshot.Data[] = Array.isArray(json) ? json : [json];
 

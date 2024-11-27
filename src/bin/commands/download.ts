@@ -13,8 +13,11 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       requirePositionals: true,
       options: Download.args.options,
       flags: Download.args.flags,
-      description:
-        'Download the supporting files for an existing snapshot JSON file.. This command expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output folder of supporting files.'
+      man: [
+        {
+          text: 'Download the supporting files for an existing snapshot JSON file.. This command expects either 1 or 2 arguments: at least a path to an existing snapshot file, and optionally also the desired path to the output folder of supporting files.'
+        }
+      ]
     }
   });
 
@@ -24,7 +27,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     outputOptions: { pretty }
   } = Download.args.parse(values);
 
-  snapshotPath = path.resolve(process.cwd(), snapshotPath);
+  snapshotPath = path.resolve(process.cwd(), snapshotPath!);
   if (!outputPath) {
     outputPath = path.join(
       path.dirname(snapshotPath),

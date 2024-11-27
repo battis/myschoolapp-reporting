@@ -11,7 +11,11 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       requirePositionals: 1,
       options: Snapshot.args.options,
       flags: Snapshot.args.flags,
-      description: `Capture a JSON snapshot of an individual course or of a collection of courses (using the ${cli.colors.value('all')} flag). In addition to relevant flags and options, the only argument expected is a URL to a page within the target course (or target LMS instance, if snapshotting more than one course).`
+      man: [
+        {
+          text: `Capture a JSON snapshot of an individual course or of a collection of courses (using the ${cli.colors.value('all')} flag). In addition to relevant flags and options, the only argument expected is a URL to a page within the target course (or target LMS instance, if snapshotting more than one course).`
+        }
+      ]
     }
   });
 
@@ -25,8 +29,12 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     quit
   } = Snapshot.args.parse(values);
 
-  const page = await common.puppeteer.openURL(url, puppeteerOptions);
-  await common.puppeteer.login(page, values);
+  const page = await common.puppeteer.openURL(url!, puppeteerOptions);
+  await common.puppeteer.login(page, {
+    username: values.username,
+    password: values.password,
+    sso: values.sso
+  });
   values.username = '';
   values.password = '';
   common.puppeteer.renewSession.start(page);

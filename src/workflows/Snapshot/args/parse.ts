@@ -8,7 +8,7 @@ type Result = {
 } & ReturnType<typeof common.args.parse> &
   ReturnType<typeof common.OAuth2.args.parse>;
 
-export function parse(values: Record<string, string>): Result {
+export function parse(values: Record<string, any>): Result {
   let {
     groupsPath,
     association,

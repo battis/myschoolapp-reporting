@@ -13,7 +13,7 @@ function stringToRegExpArray(arg: string): RegExp[] | undefined {
     : undefined;
 }
 
-export function parse(values: Record<string, string>): Result {
+export function parse(values: Record<string, any>): Result {
   return {
     ...common.args.parse(values),
     downloadOptions: {
