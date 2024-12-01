@@ -292,7 +292,9 @@ async function downloadFile(
         error
       });
     }
-    await downPage.waitForNetworkIdle();
+    // TODO this timeout is arbitrary -- should it be configurable?
+    await downPage.waitForNetworkIdle({ idleTime: 10000 });
+    await downPage.close();
   });
 }
 
@@ -321,5 +323,21 @@ async function save(
         fs.createWriteStream(streamPath)
       )
     );
+  }
+}
+
+async function waitForTabs() {
+  if (page) {
+    if ((await page.browser().pages()).length == 1) {
+      await page.browser().close();
+    } else {
+      setTimeout(waitForTabs, 100);
+    }
+  }
+}
+
+export async function quit() {
+  if (page) {
+    waitForTabs();
   }
 }

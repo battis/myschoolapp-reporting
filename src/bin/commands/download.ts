@@ -25,7 +25,8 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     downloadOptions,
     puppeteerOptions,
     loginCredentials,
-    outputOptions: { pretty, outputPath }
+    outputOptions: { pretty, outputPath },
+    quit
   } = Download.args.parse(values);
 
   snapshotPath = path.resolve(process.cwd(), snapshotPath!);
@@ -57,5 +58,9 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       loginCredentials,
       pretty
     });
+  }
+
+  if (quit) {
+    await Download.quit();
   }
 })();
