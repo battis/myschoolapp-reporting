@@ -42,13 +42,14 @@
     "extends": "@battis/eslint-config"
   },
   "dependencies": {
-    "@battis/qui-cli": "^0.8.3",
+    "@battis/qui-cli": "^0.8.4",
     "@battis/typescript-tricks": "^0.6.1",
     "async-mutex": "^0.5.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "expressionparser": "^1.1.5",
     "json-2-csv": "^5.5.7",
+    "mime": "^4.0.4",
     "oauth2-cli": "^0.1.1",
     "puppeteer": "^23.9.0"
   },

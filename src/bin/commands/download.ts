@@ -6,7 +6,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
 
 (async () => {
   let {
-    positionals: [snapshotPath, outputPath],
+    positionals: [snapshotPath],
     values
   } = cli.init({
     args: {
@@ -21,10 +21,11 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     }
   });
 
-  const {
+  let {
     downloadOptions,
     puppeteerOptions,
-    outputOptions: { pretty }
+    loginCredentials,
+    outputOptions: { pretty, outputPath }
   } = Download.args.parse(values);
 
   snapshotPath = path.resolve(process.cwd(), snapshotPath!);
@@ -53,6 +54,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     await Download.supportingFiles(snapshot, outputPath, {
       ...downloadOptions,
       ...puppeteerOptions,
+      loginCredentials,
       pretty
     });
   }

@@ -25,6 +25,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   const {
     oauthOptions,
     puppeteerOptions,
+    loginCredentials,
     downloadOptions,
     outputOptions: { outputPath: op, pretty },
     quit
@@ -34,11 +35,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   let outputPath = path.resolve(process.cwd(), op || '.');
 
   const page = await common.puppeteer.openURL(url!, puppeteerOptions);
-  await common.puppeteer.login(page, {
-    username: values.username,
-    password: values.password,
-    sso: values.sso
-  });
+  await common.puppeteer.login(page, loginCredentials);
   common.puppeteer.renewSession.start(page);
 
   const spinner = cli.spinner();
@@ -53,7 +50,9 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     for (const snapshot of snapshots) {
       await Download.supportingFiles(snapshot, outputPath, {
         pretty,
-        ...downloadOptions
+        ...downloadOptions,
+        ...puppeteerOptions,
+        loginCredentials
       });
     }
   } else {
@@ -69,7 +68,9 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       );
       await Download.supportingFiles(s, outputPath, {
         pretty,
-        ...downloadOptions
+        ...downloadOptions,
+        ...puppeteerOptions,
+        loginCredentials
       });
     } else {
       spinner.fail(

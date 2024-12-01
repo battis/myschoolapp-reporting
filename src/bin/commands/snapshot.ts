@@ -22,6 +22,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   const {
     oauthOptions,
     puppeteerOptions,
+    loginCredentials,
     snapshotOptions,
     all,
     allOptions,
@@ -30,11 +31,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   } = Snapshot.args.parse(values);
 
   const page = await common.puppeteer.openURL(url!, puppeteerOptions);
-  await common.puppeteer.login(page, {
-    username: values.username,
-    password: values.password,
-    sso: values.sso
-  });
+  await common.puppeteer.login(page, loginCredentials);
   values.username = '';
   values.password = '';
   common.puppeteer.renewSession.start(page);
