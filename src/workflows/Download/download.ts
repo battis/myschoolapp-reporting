@@ -223,6 +223,52 @@ async function downloadFile(
   const ext = path.extname(fetchUrl).slice(1);
   return new Promise<void>(async (resolve) => {
     const downPage = await (await getPage(host)).browser().newPage();
+
+    // use Chrome DevTools Protocol to rewrite content-disposition header
+    // https://stackoverflow.com/a/63232618
+    // https://github.com/subwaymatch/cdp-modify-response-example
+    const client = await downPage.target().createCDPSession();
+    await client.send('Fetch.enable', {
+      patterns: [
+        {
+          urlPattern: '*',
+          requestStage: 'Response'
+        }
+      ]
+    });
+    client.on('Fetch.requestPaused', async (reqEvent) => {
+      const { requestId } = reqEvent;
+
+      let responseHeaders = reqEvent.responseHeaders || [];
+      let contentType = '';
+
+      for (let elements of responseHeaders) {
+        if (elements.name.toLowerCase() === 'content-type') {
+          contentType = elements.value;
+        }
+      }
+
+      if (contentType.endsWith('pdf') || contentType.endsWith('xml')) {
+        responseHeaders.push({
+          name: 'content-disposition',
+          value: 'attachment'
+        });
+
+        const responseObj = await client.send('Fetch.getResponseBody', {
+          requestId
+        });
+
+        await client.send('Fetch.fulfillRequest', {
+          requestId,
+          responseCode: 200,
+          responseHeaders,
+          body: responseObj.body
+        });
+      } else {
+        await client.send('Fetch.continueRequest', { requestId });
+      }
+    });
+
     downPage.on('response', async (response) => {
       if (mime.getAllExtensions(response.headers()['content-type'])?.has(ext)) {
         await save(
@@ -235,7 +281,17 @@ async function downloadFile(
         resolve();
       }
     });
-    await downPage.goto(fetchUrl);
+
+    // _vital_ comment!
+    // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
+    try {
+      await downPage.goto(fetchUrl);
+    } catch (error) {
+      cli.log.debug({
+        warning: 'net::ERR_ABORTED exception was ignored',
+        error
+      });
+    }
     await downPage.waitForNetworkIdle();
   });
 }
