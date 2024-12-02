@@ -66,23 +66,22 @@ export async function supportingFiles(
   loginCredentials = lc;
   if (snapshot) {
     spinner.start('Downloading course content');
-    if (fs.existsSync(outputPath)) {
-      outputPath = path.join(
-        outputPath,
-        // TODO use snapshot timestamp for download folder name
-        `${common.output.pathsafeTimestamp()}-${Snapshot.isApiError(snapshot.SectionInfo) ? 'export' : `${snapshot.SectionInfo.Id}_${snapshot.SectionInfo.GroupName.replace(/[^a-z0-9]+/gi, '_')}`}`
-      );
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath, { recursive: true });
     }
     await download(snapshot, outputPath, {
       host: snapshot.Metadata.Host,
       ...options,
       pathToComponent: path.basename(outputPath)
     });
-    common.output.writeJSON(path.join(outputPath, 'index.json'), snapshot, {
+    const indexName = Snapshot.isApiError(snapshot.SectionInfo)
+      ? 'index.json'
+      : `${snapshot.SectionInfo.Id}.json`;
+    common.output.writeJSON(path.join(outputPath, indexName), snapshot, {
       pretty
     });
     spinner.succeed(
-      `${Snapshot.isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}`
+      `${Snapshot.isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
     );
   } else {
     spinner.fail('Could not downlod course content (no index available)');

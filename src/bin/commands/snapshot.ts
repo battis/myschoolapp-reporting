@@ -57,5 +57,14 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     await page.browser().close();
   }
 
-  common.output.writeJSON(outputPath, data, { pretty, name: 'snapshot' });
+  common.output.writeJSON(
+    common.output.filePathFromOutputPath(
+      outputPath,
+      !data || Array.isArray(data) || Snapshot.isApiError(data?.SectionInfo)
+        ? 'snapshot.json' // FIXME get last timestamp from the file for name
+        : `${common.output.pathsafeTimestamp(data.Metadata.Finish)}-${data.SectionInfo.GroupName} - ${data.SectionInfo.Identifier}${data.SectionInfo.Block ? ` (${data.SectionInfo.Block})` : ''}.json`
+    ),
+    data,
+    { pretty }
+  );
 })();

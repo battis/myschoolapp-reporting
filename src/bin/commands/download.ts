@@ -1,6 +1,7 @@
 import cli from '@battis/qui-cli';
 import fs from 'node:fs';
 import path from 'node:path';
+import * as common from '../../common.js';
 import * as Download from '../../workflows/Download.js';
 import * as Snapshot from '../../workflows/Snapshot.js';
 
@@ -25,20 +26,31 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     downloadOptions,
     puppeteerOptions,
     loginCredentials,
-    outputOptions: { pretty, outputPath },
+    outputOptions: { pretty, outputPath: _outputPath },
     quit
   } = Download.args.parse(values);
 
-  snapshotPath = path.resolve(process.cwd(), snapshotPath!);
-  if (!outputPath) {
-    outputPath = path.join(
-      path.dirname(snapshotPath),
-      path.basename(snapshotPath, '.json')
-    );
-  }
-
   const spinner = cli.spinner();
   spinner.start('Reading snaphot file');
+
+  snapshotPath = path.resolve(process.cwd(), snapshotPath!);
+
+  let outputPath: string;
+  if (!_outputPath) {
+    outputPath = path.join(
+      path.dirname(snapshotPath!),
+      path.basename(snapshotPath!, '.json')
+    );
+  } else {
+    if (fs.existsSync(_outputPath)) {
+      // FIXME can't seem to count past 1
+      outputPath = await common.output.avoidOverwrite(
+        path.join(_outputPath, path.basename(snapshotPath!, '.json'))
+      );
+    } else {
+      outputPath = _outputPath;
+    }
+  }
 
   let snapshots: Snapshot.Data[];
   const data = JSON.parse(fs.readFileSync(snapshotPath).toString());

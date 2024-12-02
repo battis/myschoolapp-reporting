@@ -3,6 +3,7 @@ import converter from 'json-2-csv';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as api from '../../Blackbaud/api.js';
+import * as common from '../../common.js';
 import * as Snapshot from '../../workflows/Snapshot.js';
 
 type Summary = api.DataDirect.SectionInfo & {
@@ -13,7 +14,7 @@ type Summary = api.DataDirect.SectionInfo & {
 
 (async () => {
   let {
-    positionals: [snapshotPath, outputPath]
+    positionals: [snapshotPath, _outputPath]
   } = cli.init({
     args: {
       requirePositionals: true,
@@ -25,15 +26,27 @@ type Summary = api.DataDirect.SectionInfo & {
     }
   });
 
-  if (!outputPath) {
+  const spinner = cli.spinner();
+  spinner.start('Loading snapshot');
+
+  let outputPath: string;
+  if (!_outputPath) {
     outputPath = snapshotPath!.replace(/\.json$/, '.csv');
+  } else {
+    outputPath = common.output.filePathFromOutputPath(
+      _outputPath,
+      path.basename(snapshotPath!).replace(/\.json$/, '.csv')
+    )!;
   }
 
-  const json = JSON.parse(
-    fs.readFileSync(path.resolve(process.cwd(), snapshotPath!)).toString()
-  );
+  snapshotPath = path.resolve(process.cwd(), snapshotPath!);
+  const json = JSON.parse(fs.readFileSync(snapshotPath).toString());
   const snapshots: Snapshot.Data[] = Array.isArray(json) ? json : [json];
+  spinner.succeed(
+    `Loaded ${snapshots.length} snapshots from ${cli.colors.url(snapshotPath)}`
+  );
 
+  spinner.start('Summarizing snapshots');
   const summaries: Summary[] = [];
 
   for (const snapshot of snapshots) {
@@ -54,5 +67,7 @@ type Summary = api.DataDirect.SectionInfo & {
   }
 
   const csv = converter.json2csv(summaries);
-  fs.writeFileSync(path.resolve(process.cwd(), outputPath), csv);
+  outputPath = await common.output.avoidOverwrite(outputPath!);
+  common.output.writeRecursive(outputPath, csv);
+  spinner.succeed(`Wrote summary to ${cli.colors.url(outputPath)}`);
 })();

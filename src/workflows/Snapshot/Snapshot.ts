@@ -143,10 +143,13 @@ export async function captureAll(
   spinner.info(`Snapshot session ID ${cli.colors.value(session)}`);
   spinner.info(`${groups.length} groups match filters`);
   if (groupsPath) {
-    common.output.writeJSON(groupsPath, groups, {
-      pretty,
-      name: 'groups'
-    });
+    common.output.writeJSON(
+      common.output.filePathFromOutputPath(groupsPath, 'groups.json'),
+      groups,
+      {
+        pretty
+      }
+    );
   }
 
   const data: Data[] = [];

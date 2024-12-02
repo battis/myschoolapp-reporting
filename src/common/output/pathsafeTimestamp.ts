@@ -1,3 +1,5 @@
-export function pathsafeTimestamp() {
-  return new Date().toISOString().replace(/[.:/]/g, '-');
+export function pathsafeTimestamp(date?: Date | string) {
+  return (date ? new Date(date) : new Date())
+    .toISOString()
+    .replace(/[.:/]/g, '-');
 }
