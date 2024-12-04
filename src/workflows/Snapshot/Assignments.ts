@@ -4,7 +4,7 @@ import * as api from '../../Blackbaud/api.js';
 import { AssignmentList } from '../../Blackbaud/SKY/Assignments.js';
 import * as common from '../../common.js';
 
-type Options = common.OAuth2.args.Parsed['oauthOptions'];
+type Options = common.SkyAPI.args.Parsed['skyApiOptons'];
 
 export async function capture(
   page: Page,
@@ -14,24 +14,11 @@ export async function capture(
 ) {
   const spinner = cli.spinner();
   spinner.start('Capturing assignments');
-  const token = await common.OAuth2.getToken(options);
-  if (!token) {
-    throw new Error(
-      `Could not acquire SKY API access token using provided OAuth 2.0 credentials`
-    );
-  }
+  await common.SkyAPI.init(options);
 
-  const assignmentList: AssignmentList = await (
-    await fetch(
-      `https://api.sky.blackbaud.com/school/v1/academics/sections/${groupId}/assignments`,
-      {
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${token.access_token}`
-        }
-      }
-    )
-  ).json();
+  const assignmentList = (await common.SkyAPI.fetch(
+    `school/v1/academics/sections/${groupId}/assignments`
+  )) as AssignmentList;
 
   const assignments: api.Assignment2.Response[] = [];
   if (assignmentList.count > 0) {

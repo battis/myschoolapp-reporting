@@ -6,7 +6,7 @@ type Result = {
   all: boolean;
   allOptions: Parameters<typeof captureAll>[1];
 } & ReturnType<typeof common.args.parse> &
-  ReturnType<typeof common.OAuth2.args.parse>;
+  ReturnType<typeof common.SkyAPI.args.parse>;
 
 export function parse(values: Record<string, any>): Result {
   let {

@@ -36,7 +36,7 @@ type BaseOptions = {
   assignments?: boolean;
   gradebook?: boolean;
   params?: URLSearchParams;
-} & common.OAuth2.args.Parsed['oauthOptions'];
+} & common.SkyAPI.args.Parsed['skyApiOptons'];
 
 type SingleOptions = BaseOptions & {
   url?: string;
