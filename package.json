@@ -46,13 +46,12 @@
     "@battis/typescript-tricks": "^0.6.1",
     "@oauth2-cli/sky-api": "^0.1.0",
     "async-mutex": "^0.5.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "expressionparser": "^1.1.5",
-    "glob": "^11.0.0",
     "json-2-csv": "^5.5.7",
     "mime": "^4.0.4",
-    "puppeteer": "^23.9.0"
+    "puppeteer": "^23.10.0"
   },
   "devDependencies": {
     "@battis/eslint-config": "latest",

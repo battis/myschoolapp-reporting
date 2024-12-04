@@ -1,4 +1,3 @@
-import { glob } from 'glob';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathsafeTimestamp } from './pathsafeTimestamp.js';
@@ -30,11 +29,14 @@ export const AddSequence: RenamingStrategy = async (
   const ext = path.extname(filenamePath);
   const base = path.basename(filenamePath, ext);
   const dir = path.dirname(filenamePath);
-  const n = (await glob(path.join(dir, `${base}_*`)))
+  const n = fs
+    .readdirSync(dir)
+    .filter((fileName) => fileName.startsWith(base))
+    .filter((fileName) => new RegExp(`_\\d+${ext}`).test(fileName))
     .map((other) =>
       parseInt(
         other
-          .match(new RegExp(`_(\\d+)\\${ext}$`))
+          .match(new RegExp(`_(\\d+)${ext === '' ? '' : `\\${ext}`}$`))
           ?.slice(1)
           .shift() || '0'
       )

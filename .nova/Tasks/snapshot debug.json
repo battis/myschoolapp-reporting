@@ -25,5 +25,6 @@
   "extensionTemplate" : "chromeDebug",
   "extensionValues" : {
     "request" : "attach"
-  }
+  },
+  "openLogOnRun" : "start"
 }
