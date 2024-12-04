@@ -291,6 +291,7 @@ async function downloadFile(
         error
       });
     }
+    await downPage.bringToFront();
     // TODO this timeout is arbitrary -- should it be configurable?
     await downPage.waitForNetworkIdle({ idleTime: 10000 });
     await downPage.close();
