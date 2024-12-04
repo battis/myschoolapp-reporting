@@ -63,14 +63,41 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     `Read ${snapshots.length} snapshots from ${cli.colors.url(snapshotPath)}`
   );
 
+  const indices: (string | undefined)[] = [];
+
   for (const snapshot of snapshots) {
-    await Download.supportingFiles(snapshot, outputPath, {
-      ...downloadOptions,
-      ...puppeteerOptions,
-      loginCredentials,
-      pretty
-    });
+    indices.push(
+      await Download.supportingFiles(snapshot, outputPath, {
+        ...downloadOptions,
+        ...puppeteerOptions,
+        loginCredentials,
+        pretty
+      })
+    );
   }
+
+  const index = [];
+  for (const fileName of indices) {
+    if (fileName) {
+      index.push(
+        JSON.parse(
+          fs
+            .readFileSync(
+              common.output.filePathFromOutputPath(outputPath, fileName)!
+            )
+            .toString()
+        )
+      );
+      fs.unlinkSync(
+        common.output.filePathFromOutputPath(outputPath, fileName)!
+      );
+    }
+  }
+  common.output.writeJSON(
+    common.output.filePathFromOutputPath(outputPath, 'index.json'),
+    index,
+    { pretty }
+  );
 
   if (quit) {
     await Download.quit();

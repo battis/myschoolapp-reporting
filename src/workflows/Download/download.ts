@@ -77,14 +77,20 @@ export async function supportingFiles(
     const indexName = Snapshot.isApiError(snapshot.SectionInfo)
       ? 'index.json'
       : `${snapshot.SectionInfo.Id}.json`;
-    common.output.writeJSON(path.join(outputPath, indexName), snapshot, {
-      pretty
-    });
+    await common.output.writeJSON(
+      await common.output.avoidOverwrite(path.join(outputPath, indexName)),
+      snapshot,
+      {
+        pretty
+      }
+    );
     spinner.succeed(
       `${Snapshot.isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
     );
+    return indexName;
   } else {
     spinner.fail('Could not downlod course content (no index available)');
+    return undefined;
   }
 }
 
@@ -220,7 +226,7 @@ async function downloadFile(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
   const ext = path.extname(fetchUrl).slice(1);
-  return new Promise<void>(async (resolve) => {
+  return new Promise<void>(async (resolve, reject) => {
     const downPage = await (await getPage(host)).browser().newPage();
 
     // use Chrome DevTools Protocol to rewrite content-disposition header
@@ -270,14 +276,22 @@ async function downloadFile(
 
     downPage.on('response', async (response) => {
       if (mime.getAllExtensions(response.headers()['content-type'])?.has(ext)) {
-        await save(
-          fetchUrl,
-          await response.buffer(),
-          snapshotComponent,
-          key,
-          outputPath
-        );
-        resolve();
+        try {
+          await save(
+            fetchUrl,
+            await response.buffer(),
+            snapshotComponent,
+            key,
+            outputPath
+          );
+          resolve();
+        } catch (error) {
+          /*
+           * FIXME Office downloads are throwing a protocol error
+           * `ProtocolError: Could not load body for this request. This might happen if the request is a preflight request.`
+           */
+          reject(error);
+        }
       }
     });
 

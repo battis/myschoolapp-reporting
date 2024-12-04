@@ -57,14 +57,35 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     await page.browser().close();
   }
 
-  common.output.writeJSON(
-    common.output.filePathFromOutputPath(
-      outputPath,
-      !data || Array.isArray(data) || Snapshot.isApiError(data?.SectionInfo)
-        ? 'snapshot.json' // FIXME get last timestamp from the file for name
-        : `${common.output.pathsafeTimestamp(data.Metadata.Finish)}-${data.SectionInfo.GroupName} - ${data.SectionInfo.Identifier}${data.SectionInfo.Block ? ` (${data.SectionInfo.Block})` : ''}.json`
-    ),
-    data,
-    { pretty }
-  );
+  if (!data) {
+    cli.log.warning('No data captured');
+  } else {
+    let timestamp = new Date();
+    let name = 'snapshot';
+    if (Array.isArray(data)) {
+      timestamp = data.reduce(
+        (last, snapshot) =>
+          last > snapshot.Metadata.Finish ? last : snapshot.Metadata.Finish,
+        data[0].Metadata.Finish
+      );
+    } else {
+      timestamp = data.Metadata.Finish;
+      if (Snapshot.isApiError(data.SectionInfo)) {
+        cli.log.warning(`Incomplete SectionInfo metadata captured`);
+      } else {
+        name = `${data.SectionInfo.GroupName} - ${data.SectionInfo.Identifier}`;
+        if (data.SectionInfo.Block) {
+          name = `${name} (${data.SectionInfo.Block})`;
+        }
+      }
+    }
+    common.output.writeJSON(
+      common.output.filePathFromOutputPath(
+        outputPath,
+        `${common.output.pathsafeTimestamp(timestamp)}-${name}.json`
+      ),
+      data,
+      { pretty }
+    );
+  }
 })();
