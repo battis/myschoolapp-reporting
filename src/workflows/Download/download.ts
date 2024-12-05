@@ -1,5 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Mutex } from 'async-mutex';
+import contentDisposition from 'content-disposition';
 import mime from 'mime';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -115,7 +116,9 @@ async function download(
       (
         Object.keys(snapshotComponent) as (keyof typeof snapshotComponent)[]
       ).map(async (key: keyof typeof snapshotComponent) => {
-        if (typeof snapshotComponent[key] === 'object') {
+        if (snapshotComponent[key] === null) {
+          return;
+        } else if (typeof snapshotComponent[key] === 'object') {
           await download(snapshotComponent[key], outputPath, {
             host,
             pathToComponent: `${pathToComponent}.${key}`,
@@ -158,6 +161,7 @@ async function getFile(
   outputPath: string
 ) {
   spinner.start(`Getting ${cli.colors.url(snapshotComponent[key])}`);
+  let filename = path.basename(snapshotComponent[key]);
   let localPath = cache[snapshotComponent[key]];
   if (!localPath) {
     spinner.start(`Downloading ${cli.colors.url(snapshotComponent[key])}`);
@@ -173,11 +177,23 @@ async function getFile(
         '$1/$2/1/video.$3'
       );
     }
+    filename = path.basename(fetchUrl);
     try {
       if (/ftpimages/.test(fetchUrl)) {
-        await downloadFile(fetchUrl, snapshotComponent, key, host, outputPath);
+        filename = await downloadFile(
+          fetchUrl,
+          snapshotComponent,
+          key,
+          host,
+          outputPath
+        );
       } else {
-        await fetchFile(fetchUrl, snapshotComponent, key, outputPath);
+        filename = await fetchFile(
+          fetchUrl,
+          snapshotComponent,
+          key,
+          outputPath
+        );
       }
       spinner.succeed(`Downloaded ${cli.colors.url(fetchUrl)}`);
     } catch (error) {
@@ -190,7 +206,8 @@ async function getFile(
   }
   return {
     original: snapshotComponent[key],
-    localPath
+    localPath,
+    filename
   };
 }
 
@@ -210,6 +227,9 @@ async function fetchFile(
       key,
       outputPath
     );
+    return contentDisposition.parse(
+      response.headers.get('Content-Disposition') || ''
+    ).parameters?.filename;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);
   }
@@ -226,10 +246,11 @@ async function downloadFile(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
   const ext = path.extname(fetchUrl).slice(1);
-  return new Promise<void>(async (resolve, reject) => {
+  return new Promise<string>(async (resolve, reject) => {
+    let filename = path.basename(fetchUrl);
     const downPage = await (await getPage(host)).browser().newPage();
 
-    // use Chrome DevTools Protocol to rewrite content-disposition header
+    // use Chrome DevTools Protocol to rewrite content-disposition header for PDFs
     // https://stackoverflow.com/a/63232618
     // https://github.com/subwaymatch/cdp-modify-response-example
     const client = await downPage.target().createCDPSession();
@@ -245,15 +266,24 @@ async function downloadFile(
       const { requestId } = reqEvent;
 
       let responseHeaders = reqEvent.responseHeaders || [];
-      let contentType = '';
+      let contentType = responseHeaders.findIndex(
+        (header) => header.name.toLowerCase() === 'content-type'
+      );
+      let disposition = responseHeaders.findIndex(
+        (header) => header.name.toLowerCase() === 'content-disposition'
+      );
 
-      for (let elements of responseHeaders) {
-        if (elements.name.toLowerCase() === 'content-type') {
-          contentType = elements.value;
-        }
+      if (disposition >= 0) {
+        filename =
+          contentDisposition.parse(responseHeaders[disposition].value)
+            .parameters?.filename || filename;
       }
 
-      if (contentType.endsWith('pdf') || contentType.endsWith('xml')) {
+      if (
+        contentType >= 0 &&
+        (responseHeaders[contentType].value.endsWith('pdf') ||
+          responseHeaders[contentType].value.endsWith('xml'))
+      ) {
         responseHeaders.push({
           name: 'content-disposition',
           value: 'attachment'
@@ -284,14 +314,51 @@ async function downloadFile(
             key,
             outputPath
           );
-          resolve();
+          resolve(filename);
         } catch (error) {
-          /*
-           * FIXME Office downloads are throwing a protocol error
-           * `ProtocolError: Could not load body for this request. This might happen if the request is a preflight request.`
-           */
-          reject(error);
+          cli.log.debug({
+            warning: 'ProtocolError exception was ignored',
+            error
+          });
         }
+      }
+    });
+
+    /*
+     * Actual 'file downloads' turn out to be messy because of Chrome's
+     * behavior:
+     *
+     * It opens the download in a new tab, then closes that tab as soon as the
+     * file is added to the download queue. The approach is to direct these
+     * downloads to a known folder, and rename them with their download GUID,
+     * so that they can be retrieved upon completion.
+     */
+    client.send('Browser.setDownloadBehavior', {
+      behavior: 'allowAndName',
+      downloadPath: common.output.filePathFromOutputPath(outputPath, 'tmp'),
+      eventsEnabled: true
+    });
+
+    client.on('Browser.downloadProgress', (downloadEvent) => {
+      if (downloadEvent.state === 'completed') {
+        const tempFilepath = path.resolve(
+          process.cwd(),
+          common.output.filePathFromOutputPath(outputPath, 'tmp')!,
+          downloadEvent.guid
+        );
+        const destFilepath = path.resolve(
+          process.cwd(),
+          common.output.filePathFromOutputPath(
+            outputPath,
+            new URL(fetchUrl).pathname
+          )!
+        );
+        const dir = path.dirname(destFilepath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.renameSync(tempFilepath, destFilepath);
+        resolve(filename);
       }
     });
 
