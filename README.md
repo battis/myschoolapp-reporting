@@ -37,10 +37,10 @@ npx msar snapshot --all https://example.myschoolapp.com
 
 At present the following verbs are implemented:
 
-- `download` the supporting files for an existing snapshot file.
-- `export` one or more courses with their supporting files from the LMS.
-- `snapshot` the course data for one or more classes from the LMS.
-- `summarize` the contents of an existing snapshot file.
+- `snapshot` the course data for one or more classes from the LMS to a JSON data file.
+- `download` the supporting files for an existing JSON snapshot file.
+- `export` one or more courses with their supporting files from the LMS (combine `snapshot` and `download`).
+- `summarize` the contents of an existing snapshot file to a CSV file.
 
 For each command, the `--help` (or `-h`) flag provides usage instructions:
 
