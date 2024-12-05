@@ -12,7 +12,7 @@ import { writeFile } from './writeFile.js';
 let page: Page | undefined = undefined;
 const loggingIn = new Mutex();
 let loginCredentials = {};
-const tmp = path.join('/tmp/msar/download', crypto.randomUUID());
+const TEMP = path.join('/tmp/msar/download', crypto.randomUUID());
 
 export function setLoginCredentials(credentials = {}) {
   loginCredentials = credentials;
@@ -39,14 +39,14 @@ async function waitForTabs() {
 }
 
 export async function quit() {
-  if (fs.existsSync(tmp)) {
-    const tmpContents = fs.readdirSync(tmp);
+  if (fs.existsSync(TEMP)) {
+    const tmpContents = fs.readdirSync(TEMP);
     if (tmpContents.length > 0) {
       throw new Error(
-        `${tmpContents.length} files abandoned in the temporary directory ${cli.colors.url(tmp)}`
+        `${tmpContents.length} files abandoned in the temporary directory ${cli.colors.url(TEMP)}`
       );
     }
-    fs.rmdirSync(tmp);
+    fs.rmdirSync(TEMP);
   }
   if (page) {
     waitForTabs();
@@ -152,18 +152,18 @@ export async function interactiveDownload(
      * downloads to a known folder, and rename them with their download GUID,
      * so that they can be retrieved upon completion.
      */
-    if (!fs.existsSync(tmp)) {
-      fs.mkdirSync(tmp, { recursive: true });
+    if (!fs.existsSync(TEMP)) {
+      fs.mkdirSync(TEMP, { recursive: true });
     }
     client.send('Browser.setDownloadBehavior', {
       behavior: 'allowAndName',
-      downloadPath: tmp,
+      downloadPath: TEMP,
       eventsEnabled: true
     });
 
     client.on('Browser.downloadProgress', (downloadEvent) => {
       if (downloadEvent.state === 'completed') {
-        const tempFilepath = path.join(tmp, downloadEvent.guid);
+        const tempFilepath = path.join(TEMP, downloadEvent.guid);
         const destFilepath = path.resolve(
           process.cwd(),
           common.output.filePathFromOutputPath(
