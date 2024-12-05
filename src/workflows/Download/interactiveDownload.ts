@@ -2,6 +2,7 @@ import cli from '@battis/qui-cli';
 import { Mutex } from 'async-mutex';
 import contentDisposition from 'content-disposition';
 import mime from 'mime';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Page } from 'puppeteer';
@@ -11,6 +12,7 @@ import { writeFile } from './writeFile.js';
 let page: Page | undefined = undefined;
 const loggingIn = new Mutex();
 let loginCredentials = {};
+const tmp = path.join('/tmp/msar/download', crypto.randomUUID());
 
 export function setLoginCredentials(credentials = {}) {
   loginCredentials = credentials;
@@ -37,6 +39,15 @@ async function waitForTabs() {
 }
 
 export async function quit() {
+  if (fs.existsSync(tmp)) {
+    const tmpContents = fs.readdirSync(tmp);
+    if (tmpContents.length > 0) {
+      throw new Error(
+        `${tmpContents.length} files abandoned in the temporary directory ${cli.colors.url(tmp)}`
+      );
+    }
+    fs.rmdirSync(tmp);
+  }
   if (page) {
     waitForTabs();
   }
@@ -141,19 +152,18 @@ export async function interactiveDownload(
      * downloads to a known folder, and rename them with their download GUID,
      * so that they can be retrieved upon completion.
      */
+    if (!fs.existsSync(tmp)) {
+      fs.mkdirSync(tmp, { recursive: true });
+    }
     client.send('Browser.setDownloadBehavior', {
       behavior: 'allowAndName',
-      downloadPath: common.output.filePathFromOutputPath(outputPath, 'tmp'), // FIXME remove tmp directory
+      downloadPath: tmp,
       eventsEnabled: true
     });
 
     client.on('Browser.downloadProgress', (downloadEvent) => {
       if (downloadEvent.state === 'completed') {
-        const tempFilepath = path.resolve(
-          process.cwd(),
-          common.output.filePathFromOutputPath(outputPath, 'tmp')!,
-          downloadEvent.guid
-        );
+        const tempFilepath = path.join(tmp, downloadEvent.guid);
         const destFilepath = path.resolve(
           process.cwd(),
           common.output.filePathFromOutputPath(
