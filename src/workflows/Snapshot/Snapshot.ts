@@ -11,7 +11,7 @@ import * as Groups from './Groups.js';
 import * as SectionInfo from './SectionInfo.js';
 import * as Topics from './Topics.js';
 
-const TEMP = `/tmp/msar`;
+const TEMP = path.join('/tmp/msar/snapshot', crypto.randomUUID());
 
 type Metadata = {
   Host: string;
@@ -127,7 +127,6 @@ export async function captureAll(
     ...options
   }: AllOptions
 ) {
-  const session = crypto.randomUUID();
   const _assoc = (association || '').split(',').map((t) => t.trim());
   const _terms = (termsOffered || '').split(',').map((t) => t.trim());
   const groups = (await Groups.all(page)).filter(
@@ -140,7 +139,7 @@ export async function captureAll(
         ))
   );
   const spinner = cli.spinner();
-  spinner.info(`Snapshot session ID ${cli.colors.value(session)}`);
+  spinner.info(`Snapshot session ID ${cli.colors.value(path.basename(TEMP))}`);
   spinner.info(`${groups.length} groups match filters`);
   if (groupsPath) {
     common.output.writeJSON(
@@ -153,7 +152,7 @@ export async function captureAll(
   }
 
   const data: Data[] = [];
-  await fs.mkdir(`${TEMP}/${session}`, { recursive: true });
+  await fs.mkdir(TEMP, { recursive: true });
   const zeros = new Array((groups.length + '').length).fill(0).join('');
   function pad(n: number) {
     return (zeros + n).slice(-zeros.length);
@@ -178,18 +177,16 @@ export async function captureAll(
           ...options
         });
         await fs.writeFile(
-          `${TEMP}/${session}/${pad(i + n)}.json`,
+          path.join(TEMP, `${pad(i + n)}.json`),
           JSON.stringify(snapshot)
         );
       })
     );
   }
-  const partials = await fs.readdir(`${TEMP}/${session}`);
+  const partials = await fs.readdir(TEMP);
   for (const partial of partials) {
     data.push(
-      JSON.parse(
-        (await fs.readFile(`${TEMP}/${session}/${partial}`)).toString()
-      )
+      JSON.parse((await fs.readFile(path.join(TEMP, partial))).toString())
     );
   }
   await fs.rm(TEMP, { recursive: true });
