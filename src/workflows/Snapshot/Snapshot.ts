@@ -151,8 +151,6 @@ export async function captureAll(
     );
   }
 
-  const data: Data[] = [];
-  await fs.mkdir(TEMP, { recursive: true });
   const zeros = new Array((groups.length + '').length).fill(0).join('');
   function pad(n: number) {
     return (zeros + n).slice(-zeros.length);
@@ -176,13 +174,15 @@ export async function captureAll(
           groupId: group.lead_pk.toString(),
           ...options
         });
-        await fs.writeFile(
+        await common.output.writeJSON(
           path.join(TEMP, `${pad(i + n)}.json`),
-          JSON.stringify(snapshot)
+          snapshot
         );
       })
     );
   }
+
+  const data: Data[] = [];
   const partials = await fs.readdir(TEMP);
   for (const partial of partials) {
     data.push(
