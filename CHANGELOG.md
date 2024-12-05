@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.3.0
+
+### Minor Changes
+
+- b08beae: Download everything
+
 ## 0.2.6
 
 ### Patch Changes
