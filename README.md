@@ -108,7 +108,7 @@ Parse some JSON and generate "raw" (unescaped, suitable for writing to a file) o
 `| $data | map(. as $row | $cols | map($row[.])) as $rows`
 …then iterate through the data and, and for each `$row` make an array of its values (using `$cols` to look yp each value) and store those value array as as `$rows`…
 
-`| $cols, $rows[] | @csv'
+`| $cols, $rows[] | @csv`
 …and put the column names at the top, followed by the rows of values, and format it all as CSV…
 
 `path/to/snapshot.json`
