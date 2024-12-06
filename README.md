@@ -52,6 +52,14 @@ To capture the course information for a single course:
 npx msar snapshot https://example.myschoolapp.com/app/faculty#academicclass/12345678/0/bulletinboard
 ```
 
+### Sky API access required for detailed assignment snapshot
+
+Due to recent updates to the way the LMS access assignments, it is more difficult directly query that data. Instead, the list of assignments is requested from the SKY API, and then each assignment is "visited" and the assigment data is captured as it is loaded.
+
+To accomplish this, you will need to create a new Sky API app and enable it. You will need the `client_id`, `client_secret`, `subscription_key` and `redirect_uri` for the app to configure `msar` to get that list of assignments. On the first run, you will be required to authorize the app to access the Sky API using your credentials.
+
+`Details TK`
+
 ## Snapshot Format
 
 Snapshots are captured as JSON data, pulled directly from the front-end API requests that build the LMS UI. If capturing a single course (i.e. not using the `--all` flag), the JSON file output is:
@@ -128,7 +136,7 @@ Snapshots are captured as JSON data, pulled directly from the front-end API requ
         // ... gradebook summary data
       },
       Access: {
-        // access privileges for snapshotting user
+        // ... access privileges for snapshotting user
       }
     }
   }
