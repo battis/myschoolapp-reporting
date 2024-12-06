@@ -39,8 +39,6 @@ At present the following verbs are implemented:
 
 - `snapshot` the course data for one or more classes from the LMS to a JSON data file.
 - `download` the supporting files for an existing JSON snapshot file.
-- `export` one or more courses with their supporting files from the LMS (combine `snapshot` and `download`).
-- `summarize` the contents of an existing JSON snapshot file to a CSV file.
 
 For each command, the `--help` (or `-h`) flag provides usage instructions:
 
@@ -66,12 +64,26 @@ The only single sign-on/multi-factor authentication interaction that is currentl
 
 Make sure that you have [`jq`](https://jqlang.github.io/jq/) installed (`brew install jq` is my preferred approach).
 
+### Simple summary of snapshot
+
+````sh
+npx msar snapshot --all --outputPath path/to/snapshot.json https://example.myschoolapp.com
+jq -r '[ .[] as $section | $section.Topics? // [] | length as $TopicCount | $section.Assignments? // [] | length as $AssignmentCount | $section.BulletinBoard? // [] | length as $BulletinBoardCount | $section.SectionInfo? // {} | . += {$TopicCount, $AssignmentCount, $BulletinBoardCount} ] as $data | $data[0] | keys as $cols | $data | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv' path/to/snapshot.json > path/to/summary.csv
+
+Or, in simple terms:
+
+> Snapshot everything.
+>
+> Tally up how many assignments, bulletin board items and topics are associated with each section.
+>
+> Output those tallies with the basic SectionInfo as a CSV file.
+
 ### Extract all Zoom links posted to Bulletin Boards
 
 ```sh
-npx msar snapshot --all --bulletinBoard --outputPath path/to/snapshot.json https://example.myschoolapp.com
+npx msar snapshot --all --no-topics --no-assignments  --outputPath path/to/snapshot.json https://example.myschoolapp.com
 jq -r '([ "Section Id", "Url", "ShortDescription" ], .[] as $section | $section.BulletinBoard?[]?.Content?[]? as $content | $content.Url? | select(. != null) | select(contains(".zoom.us")) | [ $section.SectionInfo.Id, $content.Url?, $content.ShortDescription? ]) | @csv' path/to/snapshot.json > path/to/csv/ouput.csv
-```
+````
 
 Or, in simple terms:
 
