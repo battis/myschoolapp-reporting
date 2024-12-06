@@ -137,7 +137,7 @@ Snapshots are captured as JSON data, pulled directly from the front-end API requ
 
 When snapshotting multiple sections (i.e. using the `--all` flag), the snapshot file is an array of snapshots, as described above.
 
-```json
+```ts
 [
   {
     // ... snapshot data
