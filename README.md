@@ -49,7 +49,7 @@ npx msar snaphot --help
 To capture the course information for a single course:
 
 ```sh
-npx msar snapshot --outputPath . https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
+npx msar snapshot https://example.myschoolapp.com/app/faculty#academicclass/97551579/0/bulletinboard
 ```
 
 ## Cookbook
