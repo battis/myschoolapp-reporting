@@ -66,9 +66,10 @@ Make sure that you have [`jq`](https://jqlang.github.io/jq/) installed (`brew in
 
 ### Simple summary of snapshot
 
-````sh
+```sh
 npx msar snapshot --all --outputPath path/to/snapshot.json https://example.myschoolapp.com
 jq -r '[ .[] as $section | $section.Topics? // [] | length as $TopicCount | $section.Assignments? // [] | length as $AssignmentCount | $section.BulletinBoard? // [] | length as $BulletinBoardCount | $section.SectionInfo? // {} | . += {$TopicCount, $AssignmentCount, $BulletinBoardCount} ] as $data | $data[0] | keys as $cols | $data | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv' path/to/snapshot.json > path/to/summary.csv
+```
 
 Or, in simple terms:
 
@@ -83,7 +84,7 @@ Or, in simple terms:
 ```sh
 npx msar snapshot --all --no-topics --no-assignments  --outputPath path/to/snapshot.json https://example.myschoolapp.com
 jq -r '([ "Section Id", "Url", "ShortDescription" ], .[] as $section | $section.BulletinBoard?[]?.Content?[]? as $content | $content.Url? | select(. != null) | select(contains(".zoom.us")) | [ $section.SectionInfo.Id, $content.Url?, $content.ShortDescription? ]) | @csv' path/to/snapshot.json > path/to/csv/ouput.csv
-````
+```
 
 Or, in simple terms:
 
