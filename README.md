@@ -61,3 +61,22 @@ npx msar snapshot -u "$(op item get $OP_ITEM --fields username)" -p "$(op item g
 ```
 
 The only single sign-on/multi-factor authentication interaction that is currently scripted is Entra ID (for my personal convenience). All other sign-ons and MFA interaction will require running the app _not_ in headless mode (as it is by default, or by invoking it with the `--no-headless` flag) to allow for an interactive login.
+
+## Cookbook
+
+Make sure that you have [`jq`](https://jqlang.github.io/jq/) installed (`brew install jq` is my preferred approach).
+
+### Extract all Zoom links posted to Bulletin Boards
+
+```sh
+npx msar snapshot --all --bulletinBoard --outputPath path/to/snapshot.json https://example.myschoolapp.com
+jq -r '([ "Section Id", "Url", "ShortDescription" ], .[] as $section | $section.BulletinBoard?[]?.Content?[]? as $content | $content.Url? | select(. != null) | select(contains(".zoom.us")) | [ $section.SectionInfo.Id, $content.Url?, $content.ShortDescription? ]) | @csv' path/to/snapshot.json > path/to/csv/ouput.csv
+```
+
+Or, in simple terms:
+
+> Snapshot all the bulletin boards on https://example.myschoolapp.com.
+>
+> Filter out a list of Section IDs, link URLs, and link ShortDescriptions for every bulletin board link for which the URL contains ".zoom.us".
+>
+> Output it as a CSV file.

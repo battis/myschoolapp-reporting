@@ -64,7 +64,8 @@ export async function capture(
     for (const assignment of assignmentList.value) {
       complete = false;
       await page.goto(
-        `https://${host}/lms-assignment/assignment/assignment-preview/${assignment.index_id}`
+        `https://${host}/lms-assignment/assignment/assignment-preview/${assignment.index_id}`,
+        { timeout: 300000 }
       );
       await completion();
     }
