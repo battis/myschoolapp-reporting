@@ -52,7 +52,7 @@
     "expressionparser": "^1.1.5",
     "json-2-csv": "^5.5.7",
     "mime": "^4.0.4",
-    "puppeteer": "^23.10.0"
+    "puppeteer": "^23.10.1"
   },
   "devDependencies": {
     "@battis/eslint-config": "latest",

@@ -6,7 +6,6 @@
  * moment, we're getting a race condition where all the files are being
  * downloaded and the cache is ignored anyway.
  */
-// FIXME sort out download paths so that cached files can be reused across courses
 const cache: Record<string, string> = {};
 
 export async function set(url: string, path: string) {

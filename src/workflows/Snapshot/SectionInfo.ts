@@ -10,7 +10,7 @@ export async function capture(
   groupId: string
 ): Promise<Data | ApiError> {
   const spinner = cli.spinner();
-  spinner.start('Capturing section info');
+  spinner.start(`Group ${groupId}: Capturing section info`);
   try {
     const info: api.DataDirect.SectionInfo | undefined = await page.evaluate(
       async (groupId) =>
@@ -27,10 +27,12 @@ export async function capture(
         }, undefined),
       groupId
     );
-    spinner.succeed('Section info captured');
+    spinner.succeed(`Group ${groupId}: Section info captured`);
     return info as api.DataDirect.SectionInfo;
   } catch (error) {
-    spinner.fail(`Error capturing section info: ${error || 'unknown'}`);
+    spinner.fail(
+      `Group ${groupId}: Error capturing section info: ${cli.colors.error(error || 'unknown')}`
+    );
     return { error };
   }
 }

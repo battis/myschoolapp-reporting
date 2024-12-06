@@ -14,7 +14,7 @@ export async function capture(
   params: URLSearchParams
 ): Promise<Data | ApiError> {
   const spinner = cli.spinner();
-  spinner.start('Capturing bulletin board');
+  spinner.start(`Group ${groupId}: Capturing bulletin board`);
   try {
     const BulletinBoard = await page.evaluate(
       async (groupId: string, params: string | URLSearchParams) => {
@@ -84,10 +84,12 @@ export async function capture(
       params.toString()
     );
 
-    spinner.succeed('Bulletin board captured');
+    spinner.succeed(`Group ${groupId}: Bulletin board captured`);
     return BulletinBoard;
   } catch (error) {
-    spinner.fail(`Error capturing bulletin board: ${error || 'unknown'}`);
+    spinner.fail(
+      `Group ${groupId}: Error capturing bulletin board: ${cli.colors.error(error || 'unknown')}`
+    );
     return { error };
   }
 }

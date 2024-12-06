@@ -1,5 +1,7 @@
 import cli from '@battis/qui-cli';
+import { Mutex } from 'async-mutex';
 import crypto from 'node:crypto';
+import events from 'node:events';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
@@ -12,6 +14,7 @@ import * as SectionInfo from './SectionInfo.js';
 import * as Topics from './Topics.js';
 
 const TEMP = path.join('/tmp/msar/snapshot', crypto.randomUUID());
+const tabMutex = new Mutex();
 
 type Metadata = {
   Host: string;
@@ -52,7 +55,7 @@ type AllOptions = BaseOptions & {
 };
 
 export async function capture(
-  page: Page,
+  parent: Page,
   {
     url,
     groupId,
@@ -71,14 +74,18 @@ export async function capture(
   }
 
   if (groupId) {
+    await tabMutex.acquire();
     spinner.start(`Capturing section ID ${groupId}`);
-    const [s, b, t, a, g] = await Promise.all([
+    const page = await parent.browser().newPage();
+    const hostUrl = new URL(url || parent.url());
+    tabMutex.release();
+    await page.goto(
+      `https://${hostUrl.host}/app/faculty#academicclass/${groupId}/0/bulletinboard`
+    );
+    const [s, b, t, g] = await Promise.all([
       SectionInfo.capture(page, groupId),
       bulletinBoard ? BulletinBoard.capture(page, groupId, params) : undefined,
       topics ? Topics.capture(page, groupId, params) : undefined,
-      assignments
-        ? Assignments.capture(page, groupId, params, oauthOptions)
-        : undefined,
       gradebook ? Gradebook.capture(page, groupId, params) : undefined
     ]);
 
@@ -97,7 +104,9 @@ export async function capture(
       SectionInfo: s,
       BulletinBoard: b,
       Topics: t,
-      Assignments: a,
+      Assignments: assignments
+        ? await Assignments.capture(page, groupId, params, oauthOptions)
+        : undefined,
       Gradebook: g
     };
 
@@ -109,6 +118,7 @@ export async function capture(
       spinner.warn(`Captured snapshot of section ${groupId} with errors`);
     }
     snapshot.Metadata.Finish = new Date();
+    await page.close();
     return snapshot;
   } else {
     spinner.fail('Unknown group ID');
@@ -127,68 +137,79 @@ export async function captureAll(
     ...options
   }: AllOptions
 ) {
-  const _assoc = (association || '').split(',').map((t) => t.trim());
-  const _terms = (termsOffered || '').split(',').map((t) => t.trim());
-  const groups = (await Groups.all(page)).filter(
-    (group) =>
-      (association === undefined || _assoc.includes(group.association)) &&
-      (termsOffered === undefined ||
-        _terms.reduce(
-          (match, term) => match && group.terms_offered.includes(term),
-          true
-        ))
-  );
-  const spinner = cli.spinner();
-  spinner.info(`Snapshot session ID ${cli.colors.value(path.basename(TEMP))}`);
-  spinner.info(`${groups.length} groups match filters`);
-  if (groupsPath) {
-    common.output.writeJSON(
-      common.output.filePathFromOutputPath(groupsPath, 'groups.json'),
-      groups,
-      {
-        pretty
-      }
+  return new Promise<Data[]>(async (resolve) => {
+    const _assoc = (association || '').split(',').map((t) => t.trim());
+    const _terms = (termsOffered || '').split(',').map((t) => t.trim());
+    const groups = (await Groups.all(page)).filter(
+      (group) =>
+        (association === undefined || _assoc.includes(group.association)) &&
+        (termsOffered === undefined ||
+          _terms.reduce(
+            (match, term) => match && group.terms_offered.includes(term),
+            true
+          ))
     );
-  }
-
-  const zeros = new Array((groups.length + '').length).fill(0).join('');
-  function pad(n: number) {
-    return (zeros + n).slice(-zeros.length);
-  }
-
-  for (let i = 0; i < groups.length; i += batchSize) {
-    const batch = groups.slice(i, i + batchSize);
-    const host = new URL(page.url()).host;
-    common.puppeteer.humanize(
-      page,
-      path.join(
-        `https://${host}`,
-        'app/faculty#academicclass',
-        batch[0].lead_pk.toString(),
-        '0/bulletinboard'
-      )
+    const spinner = cli.spinner();
+    spinner.info(
+      `Snapshot session ID ${cli.colors.value(path.basename(TEMP))}`
     );
-    await Promise.allSettled(
-      batch.map(async (group, n) => {
+    spinner.info(`${groups.length} groups match filters`);
+    if (groupsPath) {
+      common.output.writeJSON(
+        common.output.filePathFromOutputPath(groupsPath, 'groups.json'),
+        groups,
+        {
+          pretty
+        }
+      );
+    }
+
+    const zeros = new Array((groups.length + '').length).fill(0).join('');
+    function pad(n: number) {
+      return (zeros + n).slice(-zeros.length);
+    }
+
+    let next = 0;
+    let complete = 0;
+    let progress = new events.EventEmitter();
+    async function nextGroup() {
+      const i = next;
+      next += 1;
+
+      if (i < groups.length) {
+        cli.log.debug(`Processing group ${i} of ${groups.length}`);
         const snapshot = await capture(page, {
-          groupId: group.lead_pk.toString(),
+          groupId: groups[i].lead_pk.toString(),
           ...options
         });
         await common.output.writeJSON(
-          path.join(TEMP, `${pad(i + n)}.json`),
+          path.join(TEMP, `${pad(i)}.json`),
           snapshot
         );
-      })
-    );
-  }
+        progress.emit('ready');
+      }
+    }
+    progress.on('ready', async () => {
+      complete += 1;
+      nextGroup();
+    });
 
-  const data: Data[] = [];
-  const partials = await fs.readdir(TEMP);
-  for (const partial of partials) {
-    data.push(
-      JSON.parse((await fs.readFile(path.join(TEMP, partial))).toString())
-    );
-  }
-  await fs.rm(TEMP, { recursive: true });
-  return data;
+    const data: Data[] = [];
+    progress.on('ready', async () => {
+      if (complete === groups.length) {
+        const partials = await fs.readdir(TEMP);
+        for (const partial of partials) {
+          data.push(
+            JSON.parse((await fs.readFile(path.join(TEMP, partial))).toString())
+          );
+        }
+        await fs.rm(TEMP, { recursive: true });
+        resolve(data);
+      }
+    });
+
+    for (let i = 0; i < batchSize; i++) {
+      nextGroup();
+    }
+  });
 }

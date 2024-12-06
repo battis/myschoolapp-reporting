@@ -13,7 +13,7 @@ export async function capture(
   options: Options
 ) {
   const spinner = cli.spinner();
-  spinner.start('Capturing assignments');
+  spinner.start(`Group ${groupId}: Capturing assignments`);
   await common.SkyAPI.init(options);
 
   const assignmentList = (await common.SkyAPI.fetch(
@@ -43,14 +43,12 @@ export async function capture(
       });
     }
 
-    const assPage = await page.browser().newPage();
-
     // https://stackoverflow.com/a/55422938/294171
-    await assPage.setRequestInterception(true);
-    assPage.on('request', (request) => {
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
       request.continue();
     });
-    assPage.on('requestfinished', async (request) => {
+    page.on('requestfinished', async (request) => {
       if (
         request.redirectChain().length === 0 &&
         /\/api\/assignment2\/UserAssignmentDetailsGetAllData/.test(
@@ -65,13 +63,12 @@ export async function capture(
 
     for (const assignment of assignmentList.value) {
       complete = false;
-      await assPage.goto(
+      await page.goto(
         `https://${host}/lms-assignment/assignment/assignment-preview/${assignment.index_id}`
       );
       await completion();
     }
-    await assPage.close();
   }
-  spinner.succeed('Assignments captured');
+  spinner.succeed(`Group ${groupId}: Assignments captured`);
   return assignments;
 }

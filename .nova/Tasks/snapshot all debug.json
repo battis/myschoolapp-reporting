@@ -12,12 +12,13 @@
     "run" : {
       "preActions" : [
         {
-          "script" : "source .env\nnode --inspect-wait .\/dist\/bin\/msar.js download --stdoutLevel all -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso $SSO --outputPath \"$OUT\" --pretty \"$DOWNLOAD\"",
+          "script" : "source .env\nnode --inspect-wait .\/dist\/bin\/msar.js snapshot --stdoutLevel all -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso $SSO --outputPath \"$OUT\" --all --association \"Classes\" --batchSize 5 --pretty \"$URL\"\n",
           "type" : "runScript"
         }
       ]
     }
   },
+  "buildBeforeRunning" : true,
   "extension" : {
     "identifier" : "panic.JavaScript",
     "name" : "JavaScript"

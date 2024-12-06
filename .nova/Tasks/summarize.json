@@ -11,7 +11,7 @@
     },
     "run" : {
       "enabled" : true,
-      "script" : "source .env\nnode .\/dist\/bin\/msar.js summarize \"$SUMMARY\""
+      "script" : "source .env\nnode .\/dist\/bin\/msar.js summarize --stdoutLevel all \"$SUMMARY\""
     }
   },
   "buildBeforeRunning" : true,
