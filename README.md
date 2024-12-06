@@ -135,6 +135,16 @@ Snapshots are captured as JSON data, pulled directly from the front-end API requ
 }
 ```
 
+When snapshotting multiple sections (i.e. using the `--all` flag), the snapshot file is an array of snapshots, as described above.
+
+```json
+[
+  {
+    // ... snapshot data
+  }
+]
+```
+
 ## Cookbook
 
 Make sure that you have [`jq`](https://jqlang.github.io/jq/) installed (`brew install jq` is my preferred approach).
