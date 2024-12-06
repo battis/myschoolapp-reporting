@@ -82,7 +82,7 @@ Or, in simple terms:
 ### Extract all Zoom links posted to Bulletin Boards
 
 ```sh
-npx msar snapshot --all --no-topics --no-assignments  --outputPath path/to/snapshot.json https://example.myschoolapp.com
+npx msar snapshot --all --no-topics --no-assignments --no-gradebook --outputPath path/to/snapshot.json https://example.myschoolapp.com
 jq -r '([ "Section Id", "Url", "ShortDescription" ], .[] as $section | $section.BulletinBoard?[]?.Content?[]? as $content | $content.Url? | select(. != null) | select(contains(".zoom.us")) | [ $section.SectionInfo.Id, $content.Url?, $content.ShortDescription? ]) | @csv' path/to/snapshot.json > path/to/csv/ouput.csv
 ```
 
