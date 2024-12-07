@@ -50,6 +50,7 @@ export async function quit() {
     }
     await parent.close();
   }
+  cli.log.debug('Chrome closed');
 }
 
 export const interactiveDownload: DownloadStrategy = async (
@@ -84,23 +85,27 @@ export const interactiveDownload: DownloadStrategy = async (
     client.on('Fetch.requestPaused', async (reqEvent) => {
       const { requestId } = reqEvent;
 
-      const responseHeaders = reqEvent.responseHeaders || [];
-      const contentType = responseHeaders.findIndex(
+      let responseHeaders = reqEvent.responseHeaders || [];
+      const contentType = responseHeaders.find(
         (header) => header.name.toLowerCase() === 'content-type'
-      );
-      const disposition = responseHeaders.findIndex(
+      )?.value;
+      const dispositionIndex = responseHeaders.findIndex(
         (header) => header.name.toLowerCase() === 'content-disposition'
       );
+      const disposition =
+        dispositionIndex >= 0
+          ? responseHeaders[dispositionIndex].value
+          : undefined;
 
-      if (disposition >= 0) {
-        const value = responseHeaders[disposition].value || '';
+      if (disposition) {
         try {
           filename =
-            contentDisposition.parse(value).parameters?.filename || filename;
+            contentDisposition.parse(disposition).parameters?.filename ||
+            filename;
         } catch (error) {
           cli.log.debug({
             fetchUrl,
-            'Content-Disposition': value,
+            'Content-Disposition': disposition,
             strategy: 'interactiveDownload',
             error
           });
@@ -108,16 +113,16 @@ export const interactiveDownload: DownloadStrategy = async (
         }
       }
 
-      if (
-        contentType >= 0 &&
-        (responseHeaders[contentType].value.endsWith('pdf') ||
-          responseHeaders[contentType].value.endsWith('xml'))
-      ) {
-        responseHeaders.push({
+      if (contentType?.endsWith('pdf') || contentType?.endsWith('xml')) {
+        const attachmentDisposition = {
           name: 'content-disposition',
-          value: 'attachment'
-        });
-
+          value: (disposition || 'attachment').replace('inline', 'attachment')
+        };
+        if (dispositionIndex >= 0) {
+          responseHeaders[dispositionIndex] = attachmentDisposition;
+        } else {
+          responseHeaders.push(attachmentDisposition);
+        }
         const responseObj = await client.send('Fetch.getResponseBody', {
           requestId
         });
