@@ -6,8 +6,10 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Page } from 'puppeteer';
-import * as common from '../../common.js';
-import { writeFile } from './writeFile.js';
+import * as common from '../../../common.js';
+import * as Cache from '../Cache.js';
+import { writeFile } from '../writeFile.js';
+import { DownloadStrategy } from './DownloadStrategy.js';
 
 let page: Page | undefined = undefined;
 const loggingIn = new Mutex();
@@ -53,26 +55,26 @@ export async function quit() {
   }
 }
 
-export async function interactiveDownload(
+export const interactiveDownload: DownloadStrategy = async (
   fetchUrl: string,
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
   outputPath: string
-) {
+) => {
   const spinner = cli.spinner();
   spinner.start(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
   const ext = path.extname(fetchUrl).slice(1);
-  return new Promise<string>(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     let filename = path.basename(fetchUrl);
-    const downPage = await (await getPage(host)).browser().newPage();
+    const page = await (await getPage(host)).browser().newPage();
 
     // use Chrome DevTools Protocol to rewrite content-disposition header for PDFs
     // https://stackoverflow.com/a/63232618
     // https://github.com/subwaymatch/cdp-modify-response-example
-    const client = await downPage.target().createCDPSession();
+    const client = await page.createCDPSession();
     await client.send('Fetch.enable', {
       patterns: [
         {
@@ -93,9 +95,18 @@ export async function interactiveDownload(
       );
 
       if (disposition >= 0) {
-        filename =
-          contentDisposition.parse(responseHeaders[disposition].value)
-            .parameters?.filename || filename;
+        try {
+          filename =
+            contentDisposition.parse(responseHeaders[disposition].value)
+              .parameters?.filename || filename;
+        } catch (error) {
+          cli.log.debug({
+            fetchUrl,
+            'Content-Disposition': responseHeaders[disposition].value,
+            error
+          });
+          filename = path.basename(snapshotComponent[key]);
+        }
       }
 
       if (
@@ -123,7 +134,7 @@ export async function interactiveDownload(
       }
     });
 
-    downPage.on('response', async (response) => {
+    page.on('response', async (response) => {
       if (mime.getAllExtensions(response.headers()['content-type'])?.has(ext)) {
         try {
           await writeFile(
@@ -133,7 +144,7 @@ export async function interactiveDownload(
             key,
             outputPath
           );
-          resolve(filename);
+          resolve(new Cache.Item(snapshotComponent, key, fetchUrl, filename));
         } catch (error) {
           cli.log.debug({
             warning: 'ProtocolError exception was ignored',
@@ -176,23 +187,22 @@ export async function interactiveDownload(
           fs.mkdirSync(dir, { recursive: true });
         }
         fs.renameSync(tempFilepath, destFilepath);
-        resolve(filename);
+        resolve(new Cache.Item(snapshotComponent, key, fetchUrl, filename));
       }
     });
 
     // _vital_ comment!
     // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
     try {
-      await downPage.goto(fetchUrl);
+      await page.goto(fetchUrl);
     } catch (error) {
       cli.log.debug({
         warning: 'net::ERR_ABORTED exception was ignored',
         error
       });
     }
-    await downPage.bringToFront();
-    // TODO this timeout is arbitrary -- should it be configurable?
-    await downPage.waitForNetworkIdle({ idleTime: 10000 });
-    await downPage.close();
+    await page.bringToFront();
+    await page.waitForNetworkIdle({});
+    await page.close();
   });
-}
+};

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as common from '../../common.js';
 import * as Snapshot from '../Snapshot.js';
-import { setLoginCredentials } from './interactiveDownload.js';
+import * as Strategy from './Strategy.js';
 import { BaseOptions, spiderSnapshot } from './spiderSnapshot.js';
 
 type SupportingFilesOptions = BaseOptions & {
@@ -20,7 +20,7 @@ export async function supportingFiles(
   outputPath: string,
   { pretty = false, loginCredentials, ...options }: SupportingFilesOptions
 ) {
-  setLoginCredentials(loginCredentials);
+  Strategy.setLoginCredentials(loginCredentials);
   const spinner = cli.spinner();
   if (snapshot) {
     spinner.start('Downloading course content');

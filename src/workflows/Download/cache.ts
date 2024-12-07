@@ -1,17 +1,28 @@
-/*
- * FIXME ditch the cache and use a map and semaphores
- * It's probably more efficient to spider an index and discover all the files
- * that need to be downloaded, build a list of all the places every file needs
- * to go... and then queue all the downloads and apply those mappings. At the
- * moment, we're getting a race condition where all the files are being
- * downloaded and the cache is ignored anyway.
- */
-const cache: Record<string, string> = {};
+import events from 'node:events';
+import { Item } from './Cache/Item.js';
 
-export async function set(url: string, path: string) {
-  cache[url] = path;
-}
+export { Item };
 
-export async function get(url: string) {
-  return url in cache ? cache[url] : undefined;
+const AWAITING = true;
+const cache: Record<string, Item | typeof AWAITING> = {};
+const ready = new events.EventEmitter();
+ready.setMaxListeners(100);
+
+export async function get(
+  url: string,
+  downloader: () => Promise<Item>
+): Promise<Item> {
+  if (url in cache) {
+    if (cache[url] === AWAITING) {
+      return new Promise((resolve) => {
+        ready.on(url, () => resolve(cache[url] as Item));
+      });
+    }
+    return cache[url];
+  } else {
+    cache[url] = AWAITING;
+    cache[url] = await downloader();
+    ready.emit(url);
+    return cache[url];
+  }
 }

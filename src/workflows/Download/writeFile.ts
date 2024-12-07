@@ -4,7 +4,6 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { ReadableStream } from 'node:stream/web';
-import * as cache from './cache.js';
 
 export async function writeFile(
   fetchUrl: string,
@@ -19,7 +18,6 @@ export async function writeFile(
   if (localPath == '') {
     localPath = new URL(fetchUrl).hostname + '/index.html';
   }
-  await cache.set(snapshotComponent[key], localPath);
   const streamPath = path.resolve(process.cwd(), outputPath, localPath);
   fs.mkdirSync(path.dirname(streamPath), {
     recursive: true
@@ -33,4 +31,5 @@ export async function writeFile(
       )
     );
   }
+  spinner.succeed(`Saved ${cli.colors.url(localPath)}`);
 }

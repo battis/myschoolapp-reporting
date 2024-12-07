@@ -1,4 +1,4 @@
-import { chooseStrategy } from './chooseStrategy.js';
+import * as Strategy from './Strategy.js';
 
 export type BaseOptions = {
   include?: RegExp[];
@@ -57,7 +57,7 @@ export async function spiderSnapshot(
                 true
               ))
           ) {
-            (snapshotComponent[key] as any) = await chooseStrategy(
+            (snapshotComponent[key] as any) = await Strategy.choose(
               snapshotComponent,
               key,
               host,
