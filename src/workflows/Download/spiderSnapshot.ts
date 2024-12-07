@@ -1,10 +1,12 @@
 import cli from '@battis/qui-cli';
+import chalk from 'chalk';
 import * as Strategy from './Strategy.js';
 
 export type BaseOptions = {
   include?: RegExp[];
   exclude?: RegExp[];
   haltOnError: boolean;
+  retries: number;
 };
 
 type DownloadOptions = BaseOptions & {
@@ -15,7 +17,14 @@ type DownloadOptions = BaseOptions & {
 export async function spiderSnapshot(
   snapshotComponent: object,
   outputPath: string,
-  { host, pathToComponent, include, exclude, haltOnError }: DownloadOptions
+  {
+    host,
+    pathToComponent,
+    include,
+    exclude,
+    haltOnError,
+    retries
+  }: DownloadOptions
 ) {
   if (Array.isArray(snapshotComponent)) {
     await Promise.allSettled(
@@ -25,7 +34,8 @@ export async function spiderSnapshot(
           pathToComponent: `${pathToComponent}[${i}]`,
           include,
           exclude,
-          haltOnError
+          haltOnError,
+          retries
         });
       })
     );
@@ -43,7 +53,8 @@ export async function spiderSnapshot(
             pathToComponent: `${pathToComponent}.${key}`,
             include,
             exclude,
-            haltOnError
+            haltOnError,
+            retries
           });
         } else if (/Url$/.test(key)) {
           if (
@@ -66,13 +77,14 @@ export async function spiderSnapshot(
                 snapshotComponent,
                 key,
                 host,
-                outputPath
+                outputPath,
+                retries
               );
             } catch (error) {
               if (haltOnError) {
                 throw error;
               } else {
-                cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
+                cli.log.debug(chalk.gray(`Ignored: ${error}`));
                 (snapshotComponent[key] as any) = {
                   url: snapshotComponent[key],
                   error: 'Download failed'

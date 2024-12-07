@@ -20,5 +20,9 @@ export const options = {
   },
   exclude: {
     description: `Comma-separated list of regular expressions to match URLs to exclude from download (e.g. ${cli.colors.quotedValue('"example\\.com,foo\\..+\\.com"')}, default: ${cli.colors.value('undefined')})`
+  },
+  retries: {
+    description: `Number of times to retry failed file downloads (default: ${cli.colors.value(5)}`,
+    default: '5'
   }
 };

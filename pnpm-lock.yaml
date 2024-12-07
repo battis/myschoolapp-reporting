@@ -20,6 +20,9 @@ importers:
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
       content-disposition:
         specifier: ^0.5.4
         version: 0.5.4

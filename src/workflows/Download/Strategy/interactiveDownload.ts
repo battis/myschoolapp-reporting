@@ -1,5 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Mutex } from 'async-mutex';
+import chalk from 'chalk';
 import contentDisposition from 'content-disposition';
 import mime from 'mime';
 import crypto from 'node:crypto';
@@ -54,12 +55,12 @@ export const interactiveDownload: DownloadStrategy = async (
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
-  outputPath: string
+  outputPath: string,
+  retries: number
 ) => {
   cli.log.debug(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
-  let retries = 5;
   let exponentialBackoff = Math.floor(Math.random() * 100 + 50);
 
   const ext = path.extname(fetchUrl).slice(1);
@@ -74,7 +75,7 @@ export const interactiveDownload: DownloadStrategy = async (
       try {
         await page.goto(fetchUrl);
       } catch (error) {
-        cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
+        cli.log.debug(chalk.gray(`Ignored: ${error}`));
       }
     }
 
@@ -159,7 +160,7 @@ export const interactiveDownload: DownloadStrategy = async (
           result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
           ready.emit(fetchUrl);
         } catch (error) {
-          cli.log.debug(`Ignored: ${cli.colors.error(error)} (${fetchUrl})`);
+          cli.log.debug(chalk.gray(`Ignored: ${error} (${fetchUrl})`));
         }
       }
     });

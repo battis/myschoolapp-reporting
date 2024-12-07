@@ -8,7 +8,8 @@ export async function choose(
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
-  outputPath: string
+  outputPath: string,
+  retries: number
 ) {
   return await Cache.get(snapshotComponent[key], async () => {
     let fetchUrl: string = snapshotComponent[key];
@@ -32,7 +33,8 @@ export async function choose(
         snapshotComponent,
         key,
         host,
-        outputPath
+        outputPath,
+        retries
       );
     } else {
       return await httpFetch(
@@ -40,7 +42,8 @@ export async function choose(
         snapshotComponent,
         key,
         host,
-        outputPath
+        outputPath,
+        retries
       );
     }
   });
