@@ -55,13 +55,11 @@ export const interactiveDownload: DownloadStrategy = async (
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
-  outputPath: string,
-  retries: number
+  outputPath: string
 ) => {
   cli.log.debug(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
-  let exponentialBackoff = Math.floor(Math.random() * 100 + 50);
 
   const ext = path.extname(fetchUrl).slice(1);
   return new Promise(async (resolve, reject) => {
@@ -177,7 +175,7 @@ export const interactiveDownload: DownloadStrategy = async (
     if (!fs.existsSync(TEMP)) {
       fs.mkdirSync(TEMP, { recursive: true });
     }
-    client.send('Browser.setDownloadBehavior', {
+    await client.send('Browser.setDownloadBehavior', {
       behavior: 'allowAndName',
       downloadPath: TEMP,
       eventsEnabled: true
@@ -206,9 +204,7 @@ export const interactiveDownload: DownloadStrategy = async (
           );
           success = true;
         } catch (error) {
-          cli.log.error(
-            `Download failed: ${cli.colors.error(error)} (${retries} retries left)`
-          );
+          cli.log.error(`Download failed: ${cli.colors.error(error)}`);
           success = false;
         }
         result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
@@ -222,16 +218,7 @@ export const interactiveDownload: DownloadStrategy = async (
         await page.close();
         resolve(result);
       } else {
-        if (retries) {
-          cli.log.debug(
-            `Waiting ${exponentialBackoff}ms to retry download: ${cli.colors.url(fetchUrl)}`
-          );
-          setTimeout(attemptDownload, exponentialBackoff);
-          exponentialBackoff *= 2;
-          retries -= 1;
-        } else {
-          reject(`Download Failed: ${cli.colors.url(fetchUrl)}`);
-        }
+        reject(`Download Failed: ${cli.colors.url(fetchUrl)}`);
       }
     });
 

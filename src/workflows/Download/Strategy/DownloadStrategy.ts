@@ -5,6 +5,5 @@ export type DownloadStrategy = (
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
-  outputPath: string,
-  retries: number
+  outputPath: string
 ) => Promise<Cache.Item>;

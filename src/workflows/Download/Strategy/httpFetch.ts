@@ -11,8 +11,7 @@ export const httpFetch: DownloadStrategy = async (
   snapshotComponent: object,
   key: keyof typeof snapshotComponent,
   host: string,
-  outputPath: string,
-  retries: number
+  outputPath: string
 ) => {
   cli.log.debug(`Directly fetching ${cli.colors.url(snapshotComponent[key])}`);
   const response = await fetch(fetchUrl);

@@ -6,7 +6,6 @@ export type BaseOptions = {
   include?: RegExp[];
   exclude?: RegExp[];
   haltOnError: boolean;
-  retries: number;
 };
 
 type DownloadOptions = BaseOptions & {
@@ -17,14 +16,7 @@ type DownloadOptions = BaseOptions & {
 export async function spiderSnapshot(
   snapshotComponent: object,
   outputPath: string,
-  {
-    host,
-    pathToComponent,
-    include,
-    exclude,
-    haltOnError,
-    retries
-  }: DownloadOptions
+  { host, pathToComponent, include, exclude, haltOnError }: DownloadOptions
 ) {
   if (Array.isArray(snapshotComponent)) {
     await Promise.allSettled(
@@ -34,8 +26,7 @@ export async function spiderSnapshot(
           pathToComponent: `${pathToComponent}[${i}]`,
           include,
           exclude,
-          haltOnError,
-          retries
+          haltOnError
         });
       })
     );
@@ -53,8 +44,7 @@ export async function spiderSnapshot(
             pathToComponent: `${pathToComponent}.${key}`,
             include,
             exclude,
-            haltOnError,
-            retries
+            haltOnError
           });
         } else if (/Url$/.test(key)) {
           if (
@@ -77,8 +67,7 @@ export async function spiderSnapshot(
                 snapshotComponent,
                 key,
                 host,
-                outputPath,
-                retries
+                outputPath
               );
             } catch (error) {
               if (haltOnError) {
