@@ -61,17 +61,3 @@ declare const BBAuthClient: {
     LOCAL_STORAGE_KEY: string;
   };
 };
-
-function expand(obj) {
-  return Object.keys(obj).reduce((d, key) => {
-    switch (typeof obj[key]) {
-      case 'function':
-        d[key] =
-          '(' + new Array(obj[key].length).fill('_: any').join(',') + ')=>any';
-        break;
-      default:
-        d[key] = typeof obj[key];
-    }
-    return d;
-  }, {});
-}

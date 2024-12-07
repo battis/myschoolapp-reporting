@@ -23,19 +23,21 @@ export const httpFetch: DownloadStrategy = async (
       key,
       outputPath
     );
-    let filename: string;
-    try {
-      filename = contentDisposition.parse(
-        response.headers.get('Content-Disposition') || ''
-      ).parameters?.filename;
-    } catch (error) {
-      cli.log.debug({
-        fetchUrl,
-        'Content-Disposition': response.headers.get('Content-Disposition'),
-        strategy: 'httpFetch',
-        error
-      });
-      filename = path.basename(new URL(fetchUrl).pathname);
+    let filename = path.basename(new URL(fetchUrl).pathname);
+    const value = response.headers.get('Content-Disposition');
+    if (value) {
+      try {
+        filename =
+          contentDisposition.parse(value).parameters?.filename || filename;
+      } catch (error) {
+        cli.log.debug({
+          fetchUrl,
+          'Content-Disposition': value,
+          strategy: 'httpFetch',
+          error
+        });
+        filename = path.basename(new URL(fetchUrl).pathname);
+      }
     }
     return new Cache.Item(snapshotComponent, key, fetchUrl, filename);
   } else {

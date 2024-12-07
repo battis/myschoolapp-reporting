@@ -1,4 +1,3 @@
-import cli from '@battis/qui-cli';
 import * as Strategy from './Strategy.js';
 
 export type BaseOptions = {

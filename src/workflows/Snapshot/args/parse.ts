@@ -9,7 +9,7 @@ type Result = {
   ReturnType<typeof common.SkyAPI.args.parse>;
 
 export function parse(values: Record<string, any>): Result {
-  let {
+  const {
     groupsPath,
     association,
     termsOffered,

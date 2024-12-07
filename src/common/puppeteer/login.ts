@@ -28,17 +28,15 @@ export async function login(
   }
 
   if (password) {
-    switch (sso) {
-      case 'entra-id':
-        const passwordField = await page.waitForSelector(
-          'input[name="passwd"]',
-          { timeout }
-        );
-        const submitButton = await page.waitForSelector('input[type="submit"]');
-        if (passwordField) {
-          await passwordField.type(password);
-          await submitButton?.click();
-        }
+    if (sso == 'entra-id') {
+      const passwordField = await page.waitForSelector('input[name="passwd"]', {
+        timeout
+      });
+      const submitButton = await page.waitForSelector('input[type="submit"]');
+      if (passwordField) {
+        await passwordField.type(password);
+        await submitButton?.click();
+      }
     }
   }
 

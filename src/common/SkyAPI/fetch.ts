@@ -3,7 +3,7 @@ import { Mutex } from 'async-mutex';
 import { Parsed } from './args.js';
 
 let sky: SkyAPI | undefined = undefined;
-let singletonMutex = new Mutex();
+const singletonMutex = new Mutex();
 
 export async function init(credentials: Parsed['skyApiOptons']) {
   await singletonMutex.acquire();

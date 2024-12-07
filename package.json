@@ -38,9 +38,6 @@
     "release:publish": "pnpm publish -r --otp $(op item get npm --otp)"
   },
   "prettier": "@battis/prettier-config",
-  "eslintConfig": {
-    "extends": "@battis/eslint-config"
-  },
   "dependencies": {
     "@battis/qui-cli": "^0.8.4",
     "@battis/typescript-tricks": "^0.6.1",
@@ -62,6 +59,7 @@
     "@types/content-disposition": "^0.5.8",
     "@types/express": "^5.0.0",
     "del-cli": "^6.0.0",
+    "globals": "^15.13.0",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.7.2"
   },

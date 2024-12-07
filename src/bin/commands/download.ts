@@ -6,12 +6,12 @@ import * as Download from '../../workflows/Download.js';
 import * as Snapshot from '../../workflows/Snapshot.js';
 
 (async () => {
-  let {
-    positionals: [snapshotPath],
+  const {
+    positionals: [snapshotPathArg],
     values
   } = cli.init({
     args: {
-      requirePositionals: true,
+      requirePositionals: 1,
       options: Download.args.options,
       flags: Download.args.flags,
       man: [
@@ -22,7 +22,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     }
   });
 
-  let {
+  const {
     downloadOptions,
     puppeteerOptions,
     loginCredentials,
@@ -33,7 +33,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   const spinner = cli.spinner();
   spinner.start('Reading snaphot file');
 
-  snapshotPath = path.resolve(process.cwd(), snapshotPath!);
+  const snapshotPath = path.resolve(process.cwd(), snapshotPathArg!);
 
   let outputPath: string;
   if (!_outputPath) {
@@ -93,7 +93,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       );
     }
   }
-  common.output.writeJSON(
+  await common.output.writeJSON(
     common.output.filePathFromOutputPath(outputPath, 'index.json'),
     index,
     { pretty }

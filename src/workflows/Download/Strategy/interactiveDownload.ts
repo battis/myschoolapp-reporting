@@ -34,6 +34,7 @@ async function getPage(host: string) {
 }
 
 export async function quit() {
+  cli.log.debug(`Quitting`);
   if (fs.existsSync(TEMP)) {
     const tmpContents = fs.readdirSync(TEMP);
     if (tmpContents.length > 0) {
@@ -64,7 +65,7 @@ export const interactiveDownload: DownloadStrategy = async (
   active += 1;
   const ext = path.extname(fetchUrl).slice(1);
   return new Promise(async (resolve) => {
-    let filename = path.basename(fetchUrl);
+    let filename = path.basename(new URL(fetchUrl).pathname);
     const page = await (await getPage(host)).browser().newPage();
     let result: Cache.Item;
 
@@ -83,23 +84,23 @@ export const interactiveDownload: DownloadStrategy = async (
     client.on('Fetch.requestPaused', async (reqEvent) => {
       const { requestId } = reqEvent;
 
-      let responseHeaders = reqEvent.responseHeaders || [];
-      let contentType = responseHeaders.findIndex(
+      const responseHeaders = reqEvent.responseHeaders || [];
+      const contentType = responseHeaders.findIndex(
         (header) => header.name.toLowerCase() === 'content-type'
       );
-      let disposition = responseHeaders.findIndex(
+      const disposition = responseHeaders.findIndex(
         (header) => header.name.toLowerCase() === 'content-disposition'
       );
 
       if (disposition >= 0) {
+        const value = responseHeaders[disposition].value || '';
         try {
           filename =
-            contentDisposition.parse(responseHeaders[disposition].value)
-              .parameters?.filename || filename;
+            contentDisposition.parse(value).parameters?.filename || filename;
         } catch (error) {
           cli.log.debug({
             fetchUrl,
-            'Content-Disposition': responseHeaders[disposition].value,
+            'Content-Disposition': value,
             strategy: 'interactiveDownload',
             error
           });
@@ -192,6 +193,7 @@ export const interactiveDownload: DownloadStrategy = async (
     });
 
     ready.on(fetchUrl, async () => {
+      await page.waitForNetworkIdle();
       await page.close();
       active -= 1;
       resolve(result);

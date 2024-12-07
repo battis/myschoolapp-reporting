@@ -1,5 +1,3 @@
-import cli from '@battis/qui-cli';
-
 export const options = {
   outputPath: {
     short: 'o',

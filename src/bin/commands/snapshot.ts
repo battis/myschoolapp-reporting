@@ -3,7 +3,7 @@ import * as common from '../../common.js';
 import * as Snapshot from '../../workflows/Snapshot.js';
 
 (async () => {
-  let {
+  const {
     positionals: [url],
     values
   } = cli.init({

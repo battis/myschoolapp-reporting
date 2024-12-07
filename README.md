@@ -124,7 +124,7 @@ Snapshots are captured as JSON data, pulled directly from the front-end API requ
       },
       Roster: [
         {
-          // ... student roster data, including per-assigment gradebook data
+          // ... student roster data, including per assigment gradebook data
         }
       ],
       Assignments: [
@@ -150,7 +150,7 @@ When snapshotting multiple sections (i.e. using the `--all` flag), the snapshot 
   {
     // ... snapshot data
   }
-]
+];
 ```
 
 ## Cookbook

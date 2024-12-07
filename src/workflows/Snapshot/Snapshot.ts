@@ -171,7 +171,7 @@ export async function captureAll(
 
     let next = 0;
     let complete = 0;
-    let progress = new events.EventEmitter();
+    const progress = new events.EventEmitter();
     async function nextGroup() {
       const i = next;
       next += 1;

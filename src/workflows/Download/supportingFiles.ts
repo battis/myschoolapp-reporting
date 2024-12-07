@@ -21,9 +21,10 @@ export async function supportingFiles(
   { pretty = false, loginCredentials, ...options }: SupportingFilesOptions
 ) {
   Strategy.setLoginCredentials(loginCredentials);
-  const spinner = cli.spinner();
   if (snapshot) {
-    spinner.start('Downloading course content');
+    cli.log.debug(
+      `Group ${Snapshot.isApiError(snapshot.SectionInfo) ? cli.colors.error('unknown') : snapshot.SectionInfo.Id}: Downloading supporting files`
+    );
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
     }
@@ -42,12 +43,12 @@ export async function supportingFiles(
         pretty
       }
     );
-    spinner.succeed(
-      `${Snapshot.isApiError(snapshot.SectionInfo) ? 'Course' : `${snapshot.SectionInfo.GroupName} (ID ${snapshot.SectionInfo.Id})`} exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
+    cli.log.debug(
+      `Group ${Snapshot.isApiError(snapshot.SectionInfo) ? cli.colors.error('unknown') : snapshot.SectionInfo.Id}: Supporting files exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
     );
     return indexName;
   } else {
-    spinner.fail('Could not downlod course content (no index available)');
+    cli.log.warning('Could not downlod course content (no index available)');
     return undefined;
   }
 }
