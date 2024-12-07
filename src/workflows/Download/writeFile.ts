@@ -12,24 +12,29 @@ export async function writeFile(
   key: keyof typeof snapshotComponent,
   outputPath: string
 ) {
-  const spinner = cli.spinner();
   let localPath = new URL(fetchUrl).pathname.slice(1);
-  spinner.start(`Saving ${cli.colors.url(localPath)}`);
-  if (localPath == '') {
-    localPath = new URL(fetchUrl).hostname + '/index.html';
-  }
-  const streamPath = path.resolve(process.cwd(), outputPath, localPath);
-  fs.mkdirSync(path.dirname(streamPath), {
-    recursive: true
-  });
-  if (stream instanceof Buffer) {
-    fs.writeFileSync(streamPath, stream);
-  } else {
-    await finished(
-      Readable.fromWeb(stream as ReadableStream).pipe(
-        fs.createWriteStream(streamPath)
-      )
+  cli.log.debug(`Saving ${cli.colors.url(localPath)}`);
+  try {
+    if (localPath == '') {
+      localPath = new URL(fetchUrl).hostname + '/index.html';
+    }
+    const streamPath = path.resolve(process.cwd(), outputPath, localPath);
+    fs.mkdirSync(path.dirname(streamPath), {
+      recursive: true
+    });
+    if (stream instanceof Buffer) {
+      fs.writeFileSync(streamPath, stream);
+    } else {
+      await finished(
+        Readable.fromWeb(stream as ReadableStream).pipe(
+          fs.createWriteStream(streamPath)
+        )
+      );
+    }
+    cli.log.debug(`Saved ${cli.colors.url(localPath)}`);
+  } catch (error) {
+    cli.log.error(
+      `Error saving ${cli.colors.url(localPath)}: ${cli.colors.error(error)}`
     );
   }
-  spinner.succeed(`Saved ${cli.colors.url(localPath)}`);
 }
