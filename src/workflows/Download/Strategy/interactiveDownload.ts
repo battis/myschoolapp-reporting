@@ -67,16 +67,6 @@ export const interactiveDownload: DownloadStrategy = async (
     const page = await (await getPage(host)).browser().newPage();
     let result: Cache.Item;
 
-    async function attemptDownload() {
-      // _vital_ comment!
-      // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
-      try {
-        await page.goto(fetchUrl);
-      } catch (error) {
-        cli.log.debug(chalk.gray(`Ignored: ${error}`));
-      }
-    }
-
     // use Chrome DevTools Protocol to rewrite content-disposition header for PDFs
     // https://stackoverflow.com/a/63232618
     // https://github.com/subwaymatch/cdp-modify-response-example
@@ -222,6 +212,12 @@ export const interactiveDownload: DownloadStrategy = async (
       }
     });
 
-    await attemptDownload();
+    // _vital_ comment!
+    // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
+    try {
+      await page.goto(fetchUrl);
+    } catch (error) {
+      cli.log.debug(chalk.gray(`Ignored: ${error}`));
+    }
   });
 };
