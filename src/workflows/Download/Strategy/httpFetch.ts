@@ -1,5 +1,6 @@
 import cli from '@battis/qui-cli';
 import contentDisposition from 'content-disposition';
+import path from 'node:path';
 import { ReadableStream } from 'node:stream/web';
 import * as Cache from '../Cache.js';
 import { writeFile } from '../writeFile.js';
@@ -12,8 +13,7 @@ export const httpFetch: DownloadStrategy = async (
   _: string,
   outputPath: string
 ) => {
-  const spinner = cli.spinner();
-  spinner.start(`Directly fetching ${cli.colors.url(snapshotComponent[key])}`);
+  cli.log.debug(`Directly fetching ${cli.colors.url(snapshotComponent[key])}`);
   const response = await fetch(fetchUrl);
   if (response.ok && response.body) {
     await writeFile(
@@ -23,14 +23,21 @@ export const httpFetch: DownloadStrategy = async (
       key,
       outputPath
     );
-    return new Cache.Item(
-      snapshotComponent,
-      key,
-      fetchUrl,
-      contentDisposition.parse(
+    let filename: string;
+    try {
+      filename = contentDisposition.parse(
         response.headers.get('Content-Disposition') || ''
-      ).parameters?.filename
-    );
+      ).parameters?.filename;
+    } catch (error) {
+      cli.log.debug({
+        fetchUrl,
+        'Content-Disposition': response.headers.get('Content-Disposition'),
+        strategy: 'httpFetch',
+        error
+      });
+      filename = path.basename(new URL(fetchUrl).pathname);
+    }
+    return new Cache.Item(snapshotComponent, key, fetchUrl, filename);
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);
   }

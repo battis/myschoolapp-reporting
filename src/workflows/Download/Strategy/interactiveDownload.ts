@@ -3,6 +3,7 @@ import { Mutex } from 'async-mutex';
 import contentDisposition from 'content-disposition';
 import mime from 'mime';
 import crypto from 'node:crypto';
+import events from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Page } from 'puppeteer';
@@ -11,10 +12,12 @@ import * as Cache from '../Cache.js';
 import { writeFile } from '../writeFile.js';
 import { DownloadStrategy } from './DownloadStrategy.js';
 
-let page: Page | undefined = undefined;
+let parent: Page | undefined = undefined;
 const loggingIn = new Mutex();
 let loginCredentials = {};
 const TEMP = path.join('/tmp/msar/download', crypto.randomUUID());
+const ready = new events.EventEmitter();
+let active = 0;
 
 export function setLoginCredentials(credentials = {}) {
   loginCredentials = credentials;
@@ -22,22 +25,12 @@ export function setLoginCredentials(credentials = {}) {
 
 async function getPage(host: string) {
   await loggingIn.acquire();
-  if (!page) {
-    page = await common.puppeteer.openURL(`https://${host}`);
-    await common.puppeteer.login(page, loginCredentials);
+  if (!parent) {
+    parent = await common.puppeteer.openURL(`https://${host}`);
+    await common.puppeteer.login(parent, loginCredentials);
   }
   loggingIn.release();
-  return page;
-}
-
-async function waitForTabs() {
-  if (page) {
-    if ((await page.browser().pages()).length == 1) {
-      await page.browser().close();
-    } else {
-      setTimeout(waitForTabs, 100);
-    }
-  }
+  return parent;
 }
 
 export async function quit() {
@@ -50,8 +43,11 @@ export async function quit() {
     }
     fs.rmdirSync(TEMP);
   }
-  if (page) {
-    waitForTabs();
+  if (parent) {
+    if (active) {
+      throw new Error(`${active} downloads still in process`);
+    }
+    await parent.close();
   }
 }
 
@@ -62,14 +58,15 @@ export const interactiveDownload: DownloadStrategy = async (
   host: string,
   outputPath: string
 ) => {
-  const spinner = cli.spinner();
-  spinner.start(
+  cli.log.debug(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
+  active += 1;
   const ext = path.extname(fetchUrl).slice(1);
   return new Promise(async (resolve) => {
     let filename = path.basename(fetchUrl);
     const page = await (await getPage(host)).browser().newPage();
+    let result: Cache.Item;
 
     // use Chrome DevTools Protocol to rewrite content-disposition header for PDFs
     // https://stackoverflow.com/a/63232618
@@ -103,9 +100,10 @@ export const interactiveDownload: DownloadStrategy = async (
           cli.log.debug({
             fetchUrl,
             'Content-Disposition': responseHeaders[disposition].value,
+            strategy: 'interactiveDownload',
             error
           });
-          filename = path.basename(snapshotComponent[key]);
+          filename = path.basename(new URL(fetchUrl).pathname);
         }
       }
 
@@ -144,7 +142,8 @@ export const interactiveDownload: DownloadStrategy = async (
             key,
             outputPath
           );
-          resolve(new Cache.Item(snapshotComponent, key, fetchUrl, filename));
+          result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
+          ready.emit(fetchUrl);
         } catch (error) {
           cli.log.debug({
             warning: 'ProtocolError exception was ignored',
@@ -187,8 +186,15 @@ export const interactiveDownload: DownloadStrategy = async (
           fs.mkdirSync(dir, { recursive: true });
         }
         fs.renameSync(tempFilepath, destFilepath);
-        resolve(new Cache.Item(snapshotComponent, key, fetchUrl, filename));
+        result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
+        ready.emit(fetchUrl);
       }
+    });
+
+    ready.on(fetchUrl, async () => {
+      await page.close();
+      active -= 1;
+      resolve(result);
     });
 
     // _vital_ comment!
@@ -201,8 +207,5 @@ export const interactiveDownload: DownloadStrategy = async (
         error
       });
     }
-    await page.bringToFront();
-    await page.waitForNetworkIdle({});
-    await page.close();
   });
 };

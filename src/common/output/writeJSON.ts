@@ -8,22 +8,21 @@ export async function writeJSON(
   data: object | undefined,
   { pretty = false } = {}
 ) {
-  const spinner = cli.spinner();
   if (data) {
     if (outputPath) {
-      spinner.start('Writing output to file');
       const filePath = await avoidOverwrite(
         path.resolve(process.cwd(), outputPath)
       );
+      cli.log.debug(`Writing output to ${cli.colors.url(filePath)}`);
       writeRecursive(
         filePath,
         pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
       );
-      spinner.succeed(`Wrote ${cli.colors.url(filePath)}`);
+      cli.log.debug(`Wrote ${cli.colors.url(filePath)}`);
     } else {
       cli.log.info(data);
     }
   } else {
-    spinner.warn('No data to write');
+    cli.log.warning('No data to write');
   }
 }
