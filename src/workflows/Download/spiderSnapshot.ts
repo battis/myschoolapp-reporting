@@ -1,8 +1,10 @@
+import cli from '@battis/qui-cli';
 import * as Strategy from './Strategy.js';
 
 export type BaseOptions = {
   include?: RegExp[];
   exclude?: RegExp[];
+  haltOnError: boolean;
 };
 
 type DownloadOptions = BaseOptions & {
@@ -13,7 +15,7 @@ type DownloadOptions = BaseOptions & {
 export async function spiderSnapshot(
   snapshotComponent: object,
   outputPath: string,
-  { host, pathToComponent, include, exclude }: DownloadOptions
+  { host, pathToComponent, include, exclude, haltOnError }: DownloadOptions
 ) {
   if (Array.isArray(snapshotComponent)) {
     await Promise.allSettled(
@@ -22,7 +24,8 @@ export async function spiderSnapshot(
           host,
           pathToComponent: `${pathToComponent}[${i}]`,
           include,
-          exclude
+          exclude,
+          haltOnError
         });
       })
     );
@@ -39,7 +42,8 @@ export async function spiderSnapshot(
             host,
             pathToComponent: `${pathToComponent}.${key}`,
             include,
-            exclude
+            exclude,
+            haltOnError
           });
         } else if (/Url$/.test(key)) {
           if (
@@ -57,12 +61,24 @@ export async function spiderSnapshot(
                 true
               ))
           ) {
-            (snapshotComponent[key] as any) = await Strategy.choose(
-              snapshotComponent,
-              key,
-              host,
-              outputPath
-            );
+            try {
+              (snapshotComponent[key] as any) = await Strategy.choose(
+                snapshotComponent,
+                key,
+                host,
+                outputPath
+              );
+            } catch (error) {
+              if (haltOnError) {
+                throw error;
+              } else {
+                cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
+                (snapshotComponent[key] as any) = {
+                  url: snapshotComponent[key],
+                  error: 'Download failed'
+                };
+              }
+            }
           }
         }
       })

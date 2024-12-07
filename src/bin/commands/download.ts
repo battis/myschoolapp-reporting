@@ -93,13 +93,17 @@ import * as Snapshot from '../../workflows/Snapshot.js';
       );
     }
   }
-  await common.output.writeJSON(
-    common.output.filePathFromOutputPath(outputPath, 'index.json'),
-    index,
-    { pretty }
+  const indexPath = common.output.filePathFromOutputPath(
+    outputPath,
+    'index.json'
   );
+  await common.output.writeJSON(indexPath, index, { pretty });
 
   if (quit) {
     await Download.quit();
   }
+  spinner.succeed(
+    `Snapshot supporting files exported to ${cli.colors.url(path.dirname(indexPath!))}`
+  );
+  process.exit(0); // TODO unclear why the process needs to be explicitly ended
 })();

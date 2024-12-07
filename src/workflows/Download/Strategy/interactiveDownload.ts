@@ -17,7 +17,6 @@ const loggingIn = new Mutex();
 let loginCredentials = {};
 const TEMP = path.join('/tmp/msar/download', crypto.randomUUID());
 const ready = new events.EventEmitter();
-let active = 0;
 
 export function setLoginCredentials(credentials = {}) {
   loginCredentials = credentials;
@@ -45,9 +44,6 @@ export async function quit() {
     fs.rmdirSync(TEMP);
   }
   if (parent) {
-    if (active) {
-      throw new Error(`${active} downloads still in process`);
-    }
     await parent.close();
   }
   cli.log.debug('Chrome closed');
@@ -63,12 +59,24 @@ export const interactiveDownload: DownloadStrategy = async (
   cli.log.debug(
     `Navigating JavaScript authentication to download ${cli.colors.url(snapshotComponent[key])}`
   );
-  active += 1;
+  let retries = 5;
+  let exponentialBackoff = Math.floor(Math.random() * 100 + 50);
+
   const ext = path.extname(fetchUrl).slice(1);
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     let filename = path.basename(new URL(fetchUrl).pathname);
     const page = await (await getPage(host)).browser().newPage();
     let result: Cache.Item;
+
+    async function attemptDownload() {
+      // _vital_ comment!
+      // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
+      try {
+        await page.goto(fetchUrl);
+      } catch (error) {
+        cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
+      }
+    }
 
     // use Chrome DevTools Protocol to rewrite content-disposition header for PDFs
     // https://stackoverflow.com/a/63232618
@@ -85,7 +93,7 @@ export const interactiveDownload: DownloadStrategy = async (
     client.on('Fetch.requestPaused', async (reqEvent) => {
       const { requestId } = reqEvent;
 
-      let responseHeaders = reqEvent.responseHeaders || [];
+      const responseHeaders = reqEvent.responseHeaders || [];
       const contentType = responseHeaders.find(
         (header) => header.name.toLowerCase() === 'content-type'
       )?.value;
@@ -174,7 +182,9 @@ export const interactiveDownload: DownloadStrategy = async (
       eventsEnabled: true
     });
 
-    client.on('Browser.downloadProgress', (downloadEvent) => {
+    let success = true;
+
+    client.on('Browser.downloadProgress', async (downloadEvent) => {
       if (downloadEvent.state === 'completed') {
         const tempFilepath = path.join(TEMP, downloadEvent.guid);
         const destFilepath = path.resolve(
@@ -188,25 +198,42 @@ export const interactiveDownload: DownloadStrategy = async (
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true });
         }
-        fs.renameSync(tempFilepath, destFilepath);
+        try {
+          fs.renameSync(tempFilepath, destFilepath);
+          cli.log.debug(
+            `Moved Chrome download to ${cli.colors.url(new URL(fetchUrl).pathname.slice(1))}`
+          );
+          success = true;
+        } catch (error) {
+          cli.log.error(
+            `Download failed: ${cli.colors.error(error)} (${retries} retries left)`
+          );
+          success = false;
+        }
         result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
         ready.emit(fetchUrl);
       }
     });
 
     ready.on(fetchUrl, async () => {
-      await page.waitForNetworkIdle();
-      await page.close();
-      active -= 1;
-      resolve(result);
+      if (success) {
+        await page.waitForNetworkIdle();
+        await page.close();
+        resolve(result);
+      } else {
+        if (retries) {
+          cli.log.debug(
+            `Waiting ${exponentialBackoff}ms to retry download: ${cli.colors.url(fetchUrl)}`
+          );
+          setTimeout(attemptDownload, exponentialBackoff);
+          exponentialBackoff *= 2;
+          retries -= 1;
+        } else {
+          reject(`Download Failed: ${cli.colors.url(fetchUrl)}`);
+        }
+      }
     });
 
-    // _vital_ comment!
-    // https://stackoverflow.com/questions/56254177/open-puppeteer-with-specific-configuration-download-pdf-instead-of-pdf-viewer#comment114412241_63232618
-    try {
-      await page.goto(fetchUrl);
-    } catch (error) {
-      cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
-    }
+    await attemptDownload();
   });
 };

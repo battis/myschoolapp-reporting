@@ -4,6 +4,7 @@ type Result = ReturnType<typeof common.args.parse> & {
   downloadOptions: {
     include?: RegExp[];
     exclude?: RegExp[];
+    haltOnError: boolean;
   };
 };
 
@@ -18,7 +19,8 @@ export function parse(values: Record<string, any>): Result {
     ...common.args.parse(values),
     downloadOptions: {
       include: stringToRegExpArray(values.include),
-      exclude: stringToRegExpArray(values.exclude)
+      exclude: stringToRegExpArray(values.exclude),
+      haltOnError: !!values.haltOnError
     }
   };
 }
