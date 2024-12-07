@@ -146,10 +146,7 @@ export const interactiveDownload: DownloadStrategy = async (
           result = new Cache.Item(snapshotComponent, key, fetchUrl, filename);
           ready.emit(fetchUrl);
         } catch (error) {
-          cli.log.debug({
-            warning: 'ProtocolError exception was ignored',
-            error
-          });
+          cli.log.debug(`Ignored: ${cli.colors.error(error)} (${fetchUrl})`);
         }
       }
     });
@@ -204,10 +201,7 @@ export const interactiveDownload: DownloadStrategy = async (
     try {
       await page.goto(fetchUrl);
     } catch (error) {
-      cli.log.debug({
-        warning: 'net::ERR_ABORTED exception was ignored',
-        error
-      });
+      cli.log.debug(`Ignored: ${cli.colors.error(error)}`);
     }
   });
 };
