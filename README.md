@@ -52,6 +52,107 @@ To capture the course information for a single course:
 npx msar snapshot https://example.myschoolapp.com/app/faculty#academicclass/12345678/0/bulletinboard
 ```
 
+### Sky API access required for detailed assignment snapshot
+
+Due to recent updates to the way the LMS access assignments, it is more difficult directly query that data. Instead, the list of assignments is requested from the SKY API, and then each assignment is "visited" and the assigment data is captured as it is loaded.
+
+To accomplish this, you will need to create a new Sky API app and enable it. You will need the `client_id`, `client_secret`, `subscription_key` and `redirect_uri` for the app to configure `msar` to get that list of assignments. On the first run, you will be required to authorize the app to access the Sky API using your credentials.
+
+`Details TK`
+
+## Snapshot Format
+
+Snapshots are captured as JSON data, pulled directly from the front-end API requests that build the LMS UI. If capturing a single course (i.e. not using the `--all` flag), the JSON file output is:
+
+```ts
+{
+  // always included
+  Metadata: {
+    Host: "example.myschoolapp.com", // base hostname for all relative URLs
+    User: "admin@example.com", // email address of user capturing the snapshot
+    Start: "2024-12-05T22:59:35.336Z", // human-readable timestamp of snapshot start time,
+    Finish: "2024-12-05T22:59:42.212Z" // human-readable timestamp of snapshot finish time,
+  },
+
+  // included unless unavailable from the LMS
+  SectionInfo?: {
+    Id: 12345678, // group ID within the system
+    // ... metadata about the group (course, activity, team, advisory…)
+  },
+
+  // included unless --no-bulletinBoard flag is used
+  BulletinBoard?: [ // list of bulletin board items
+    {
+      // ... layout information for the content item
+      Content: [ // list of content parts (e.g. downloads, links, etc.)
+        {
+          // ... content data varies by item type
+        }
+      ]
+    }
+  ],
+
+  // included unless --no-topics flag is used
+  Topics?: [
+    {
+      // ... topic metadata
+      Content: [
+        {
+          // content data varies by item type
+        }
+      ]
+    }
+  ],
+
+  // included unless --no-assignments flag is used
+  Assigments?: [
+    {
+      // assignment data varies by assignment type (discussion, LTI placement, online file submission, etc.)
+    }
+  ],
+
+  // included unless --no-gradebook flag is used
+  Gradebook?: {
+    markingPeriods: [
+      {
+        // marking period data
+      }
+    ],
+    Gradebook: {
+      DisplayOptions: {
+        // display settings
+      },
+      Roster: [
+        {
+          // ... student roster data, including per-assigment gradebook data
+        }
+      ],
+      Assignments: [
+        {
+          // ... assignment data (limited compared to main Assignments list)
+        }
+      ],
+      Summary: {
+        // ... gradebook summary data
+      },
+      Access: {
+        // ... access privileges for snapshotting user
+      }
+    }
+  }
+}
+```
+
+When snapshotting multiple sections (i.e. using the `--all` flag), the snapshot file is an array of snapshots, as described above.
+
+```ts
+[
+  {
+    // ... snapshot data
+  }
+]
+```
+
 ## Cookbook
 
 Make sure that you have [`jq`](https://jqlang.github.io/jq/) installed (`brew install jq` is my preferred approach).
