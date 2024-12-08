@@ -1,5 +1,4 @@
 import cli from '@battis/qui-cli';
-import chalk from 'chalk';
 import * as Strategy from './Strategy.js';
 
 export type BaseOptions = {
@@ -15,13 +14,12 @@ type DownloadOptions = BaseOptions & {
 
 export async function spiderSnapshot(
   snapshotComponent: object,
-  outputPath: string,
   { host, pathToComponent, include, exclude, haltOnError }: DownloadOptions
 ) {
   if (Array.isArray(snapshotComponent)) {
     await Promise.allSettled(
       snapshotComponent.map(async (elt, i) => {
-        await spiderSnapshot(elt, outputPath, {
+        await spiderSnapshot(elt, {
           host,
           pathToComponent: `${pathToComponent}[${i}]`,
           include,
@@ -39,7 +37,7 @@ export async function spiderSnapshot(
         if (snapshotComponent[key] === null) {
           return;
         } else if (typeof snapshotComponent[key] === 'object') {
-          await spiderSnapshot(snapshotComponent[key], outputPath, {
+          await spiderSnapshot(snapshotComponent[key], {
             host,
             pathToComponent: `${pathToComponent}.${key}`,
             include,
@@ -66,14 +64,13 @@ export async function spiderSnapshot(
               (snapshotComponent[key] as any) = await Strategy.choose(
                 snapshotComponent,
                 key,
-                host,
-                outputPath
+                host
               );
             } catch (error) {
               if (haltOnError) {
                 throw error;
               } else {
-                cli.log.debug(chalk.gray(`Ignored: ${error}`));
+                cli.log.debug(`Ignored: ${error}`);
                 (snapshotComponent[key] as any) = {
                   url: snapshotComponent[key],
                   error: 'Download failed'

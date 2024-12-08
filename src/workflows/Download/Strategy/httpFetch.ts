@@ -6,16 +6,23 @@ import * as Cache from '../Cache.js';
 import { writeFile } from '../writeFile.js';
 import { DownloadStrategy } from './DownloadStrategy.js';
 
+let outputPath: string | undefined = undefined;
+
+export function init({ outputPath: o }: { outputPath: string }) {
+  outputPath = o;
+}
+
 export const httpFetch: DownloadStrategy = async (
   fetchUrl: string,
   snapshotComponent: object,
-  key: keyof typeof snapshotComponent,
-  host: string,
-  outputPath: string
+  key: keyof typeof snapshotComponent
 ) => {
   cli.log.debug(`Directly fetching ${cli.colors.url(snapshotComponent[key])}`);
   const response = await fetch(fetchUrl);
   if (response.ok && response.body) {
+    if (!outputPath) {
+      throw new Error('httpFetch outputPath not initialized');
+    }
     await writeFile(
       fetchUrl,
       response.body as ReadableStream,

@@ -43,7 +43,6 @@
     "@battis/typescript-tricks": "^0.6.1",
     "@oauth2-cli/sky-api": "^0.1.0",
     "async-mutex": "^0.5.0",
-    "chalk": "^5.3.0",
     "content-disposition": "^0.5.4",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",

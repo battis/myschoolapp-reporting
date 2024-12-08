@@ -63,14 +63,19 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     `Read ${snapshots.length} snapshots from ${cli.colors.url(snapshotPath)}`
   );
 
+  Download.init({
+    outputPath,
+    ...loginCredentials,
+    host: snapshots[0].Metadata.Host
+  });
   const indices: (string | undefined)[] = [];
 
   for (const snapshot of snapshots) {
     indices.push(
-      await Download.supportingFiles(snapshot, outputPath, {
+      await Download.supportingFiles(snapshot, {
         ...downloadOptions,
+        outputPath,
         ...puppeteerOptions,
-        loginCredentials,
         pretty
       })
     );
