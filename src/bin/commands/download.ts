@@ -63,16 +63,16 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     `Read ${snapshots.length} snapshots from ${cli.colors.url(snapshotPath)}`
   );
 
-  Download.init({
+  const spider = new Download.Spider({
     outputPath,
-    ...loginCredentials,
+    credentials: loginCredentials,
     host: snapshots[0].Metadata.Host
   });
   const indices: (string | undefined)[] = [];
 
   for (const snapshot of snapshots) {
     indices.push(
-      await Download.supportingFiles(snapshot, {
+      await spider.download(snapshot, {
         ...downloadOptions,
         outputPath,
         ...puppeteerOptions,
@@ -105,7 +105,7 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   await common.output.writeJSON(indexPath, index, { pretty });
 
   if (quit) {
-    await Download.quit();
+    await spider.quit();
   }
   spinner.succeed(
     `Snapshot supporting files exported to ${cli.colors.url(path.dirname(indexPath!))}`

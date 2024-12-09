@@ -5,18 +5,17 @@ import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { ReadableStream } from 'node:stream/web';
 
-export async function writeFile(
-  fetchUrl: string,
-  stream: ReadableStream | Buffer,
-  snapshotComponent: object,
-  key: keyof typeof snapshotComponent,
-  outputPath: string
-) {
-  let localPath = new URL(fetchUrl).pathname.slice(1);
-  cli.log.debug(`Saving ${cli.colors.url(localPath)}`);
+type Options = {
+  url: string;
+  stream: ReadableStream | Buffer;
+  outputPath: string;
+};
+
+export async function writeFetchedFile({ url, stream, outputPath }: Options) {
+  let localPath = new URL(url).pathname.slice(1);
   try {
     if (localPath == '') {
-      localPath = new URL(fetchUrl).hostname + '/index.html';
+      localPath = new URL(url).hostname + '/index.html';
     }
     const streamPath = path.resolve(process.cwd(), outputPath, localPath);
     fs.mkdirSync(path.dirname(streamPath), {
@@ -31,10 +30,13 @@ export async function writeFile(
         )
       );
     }
-    cli.log.debug(`Saved ${cli.colors.url(localPath)}`);
+    cli.log.debug(
+      `Saved ${cli.colors.url(url)} to ${cli.colors.url(localPath)}`
+    );
+    return localPath;
   } catch (error) {
-    cli.log.error(
-      `Error saving ${cli.colors.url(localPath)}: ${cli.colors.error(error)}`
+    throw new Error(
+      `Error saving ${cli.colors.url(url)} to ${cli.colors.url(localPath)}: ${cli.colors.error(error)}`
     );
   }
 }

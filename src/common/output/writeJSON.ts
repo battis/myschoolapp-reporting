@@ -13,7 +13,6 @@ export async function writeJSON(
       const filePath = await avoidOverwrite(
         path.resolve(process.cwd(), outputPath)
       );
-      cli.log.debug(`Writing JSON to ${cli.colors.url(filePath)}`);
       writeRecursive(
         filePath,
         pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)

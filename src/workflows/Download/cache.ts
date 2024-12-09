@@ -1,11 +1,22 @@
-import events from 'node:events';
-import { Item } from './Cache/Item.js';
+import { EventEmitter } from 'node:events';
 
-export { Item };
+export type DownloadData = {
+  localPath: string;
+  filename?: string;
+  error?: never;
+};
+export type DownloadError = {
+  localPath?: never;
+  filename?: never;
+  error: string;
+};
+export type Item = {
+  original: string;
+} & (DownloadData | DownloadError);
 
 const AWAITING = true;
 const cache: Record<string, Item | typeof AWAITING> = {};
-const ready = new events.EventEmitter();
+const ready = new EventEmitter();
 ready.setMaxListeners(100);
 
 export async function get(
