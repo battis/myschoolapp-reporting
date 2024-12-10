@@ -37,7 +37,11 @@ export class Downloader implements Strategy {
       if (/ftpimages/.test(fetchUrl)) {
         strategy = this.auth;
       }
-      return { original, ...(await strategy.download(fetchUrl)) };
+      return {
+        original,
+        accessed: new Date(),
+        ...(await strategy.download(fetchUrl))
+      };
     });
   }
 

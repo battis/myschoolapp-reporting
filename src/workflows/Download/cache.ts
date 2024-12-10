@@ -12,6 +12,7 @@ export type DownloadError = {
 };
 export type Item = {
   original: string;
+  accessed: Date;
 } & (DownloadData | DownloadError);
 
 const AWAITING = true;
