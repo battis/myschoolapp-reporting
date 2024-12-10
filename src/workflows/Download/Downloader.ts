@@ -21,12 +21,9 @@ export class Downloader implements Strategy {
 
   public async download(original: string) {
     return await Cache.get(original, async () => {
-      let fetchUrl: string = original;
+      let fetchUrl = original;
       if (fetchUrl.slice(0, 2) == '//') {
         fetchUrl = `https:${fetchUrl}`;
-        const url = new URL(fetchUrl);
-        url.searchParams.delete('w');
-        fetchUrl = url.toString();
       } else if (fetchUrl.slice(0, 1) == '/') {
         fetchUrl = `https://${this.host}${fetchUrl}`;
       }

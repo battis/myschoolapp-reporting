@@ -72,7 +72,9 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       'Fetch.requestPaused',
       (async (requestPausedEvent: Protocol.Fetch.RequestPausedEvent) => {
         const { requestId } = requestPausedEvent;
-        if (requestPausedEvent.request.url === url) {
+        const reqUrl = new URL(requestPausedEvent.request.url);
+        const fetchUrl = new URL(url);
+        if (reqUrl.pathname === fetchUrl.pathname) {
           filename = filenameFromDisposition({
             url,
             value: requestPausedEvent.responseHeaders?.find(
@@ -107,7 +109,8 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
             fs.renameSync(tempFilepath, destFilepath);
             cli.log.debug(`Moved temp file to ${cli.colors.url(localPath)}`);
             this.emit(url, { localPath, filename });
-          } catch (_) {
+          } catch (error) {
+            cli.log.warning(`Temp file not present: ${error}`);
             try {
               const downloadFilepath = path.join(
                 process.env.HOME!,
@@ -128,9 +131,6 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       }).bind(this)
     );
 
-    if (!fs.existsSync(TEMP)) {
-      fs.mkdirSync(TEMP, { recursive: true });
-    }
     client.send('Browser.setDownloadBehavior', {
       behavior: 'allowAndName',
       downloadPath: TEMP,

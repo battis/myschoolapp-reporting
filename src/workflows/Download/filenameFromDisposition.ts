@@ -20,7 +20,7 @@ export function filenameFromDisposition({ url, value }: Options): string {
     cli.log.debug(`${url}: ${filename}`);
   } catch (error) {
     cli.log.warning(
-      `Error parsing ${cli.colors.url(url)} ${ContentDisposition} ${cli.colors.quotedValue(`"${value}"`)}: ${cli.colors.error(error)}`
+      `Error parsing ${cli.colors.url(url)} {${ContentDisposition}: ${cli.colors.quotedValue(`"${value}"`)}}: ${cli.colors.error(error)}`
     );
   }
   return filename;
