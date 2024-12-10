@@ -46,14 +46,11 @@
     "content-disposition": "^0.5.4",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
-    "expressionparser": "^1.1.5",
-    "json-2-csv": "^5.5.7",
-    "mime": "^4.0.4",
-    "puppeteer": "^23.10.1"
+    "puppeteer": "^23.10.2"
   },
   "devDependencies": {
-    "@battis/eslint-config": "latest",
-    "@battis/prettier-config": "latest",
+    "@battis/eslint-config": "^2.0.1",
+    "@battis/prettier-config": "^1.5.5",
     "@changesets/cli": "^2.27.10",
     "@tsconfig/node20": "^20.1.4",
     "@types/content-disposition": "^0.5.8",

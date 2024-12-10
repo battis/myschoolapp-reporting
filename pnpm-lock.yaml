@@ -29,24 +29,15 @@ importers:
       ejs:
         specifier: ^3.1.10
         version: 3.1.10
-      expressionparser:
-        specifier: ^1.1.5
-        version: 1.1.5
-      json-2-csv:
-        specifier: ^5.5.7
-        version: 5.5.7
-      mime:
-        specifier: ^4.0.4
-        version: 4.0.4
       puppeteer:
-        specifier: ^23.10.1
-        version: 23.10.1(typescript@5.7.2)
+        specifier: ^23.10.2
+        version: 23.10.2(typescript@5.7.2)
     devDependencies:
       '@battis/eslint-config':
-        specifier: latest
-        version: 2.0.0(@eslint/js@9.16.0)(eslint-config-prettier@9.1.0(eslint@9.16.0))(eslint-plugin-html@8.1.2)(eslint-plugin-markdown@5.1.0(eslint@9.16.0))(eslint@9.16.0)(globals@15.13.0)(typescript-eslint@8.17.0(eslint@9.16.0)(typescript@5.7.2))(typescript@5.7.2)
+        specifier: ^2.0.1
+        version: 2.0.1(@eslint/js@9.16.0)(eslint-config-prettier@9.1.0(eslint@9.16.0))(eslint-plugin-html@8.1.2)(eslint-plugin-markdown@5.1.0(eslint@9.16.0))(eslint@9.16.0)(globals@15.13.0)(typescript-eslint@8.17.0(eslint@9.16.0)(typescript@5.7.2))(typescript@5.7.2)
       '@battis/prettier-config':
-        specifier: latest
+        specifier: ^1.5.5
         version: 1.5.5(typescript@5.7.2)
       '@changesets/cli':
         specifier: ^2.27.10
@@ -136,8 +127,8 @@ packages:
     resolution: {integrity: sha512-vN5p+1kl59GVKMvTHt55NzzmYVxprfJD+ql7U9NFIfKCBkYE55LYtS+WtPlaYOyzydrKI8Nezd+aZextrd+FMA==}
     engines: {node: '>=6.9.0'}
 
-  '@battis/eslint-config@2.0.0':
-    resolution: {integrity: sha512-3I6Chcez3V3dTltWzj9YwHcCD1RBPWoOGGw6hDfxXH2HbtjBzoquBrHNYNCo6+te2/mX4ovDBSDYewcE49GWMw==}
+  '@battis/eslint-config@2.0.1':
+    resolution: {integrity: sha512-P2uG6nuX5+nhm85t30jhTdy2ZuSAOIbw8aCiD+YvdMtAO5VAd7mSu0TL24gDTB3U/q+B26h7OH8HJUFNVOZ4XQ==}
     peerDependencies:
       '@eslint/js': '*'
       eslint: '*'
@@ -404,8 +395,8 @@ packages:
   '@prettier/plugin-xml@2.2.0':
     resolution: {integrity: sha512-UWRmygBsyj4bVXvDiqSccwT1kmsorcwQwaIy30yVh8T+Gspx4OlC0shX1y+ZuwXZvgnafmpRYKks0bAu9urJew==}
 
-  '@puppeteer/browsers@2.5.0':
-    resolution: {integrity: sha512-6TQAc/5uRILE6deixJ1CR8rXyTbzXIXNgO1D0Woi9Bqicz2FV5iKP3BHYEg6o4UATCMcbQQ0jbmeaOkn/HQk2w==}
+  '@puppeteer/browsers@2.6.0':
+    resolution: {integrity: sha512-jESwj3APl78YUWHf28s2EjL0OIxcvl1uLU6Ge68KQ9ZXNsekUcbdr9dCi6vEO8naXS18lWXCV56shVkPStzXSQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -730,8 +721,8 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
-  call-bind-apply-helpers@1.0.0:
-    resolution: {integrity: sha512-CCKAP2tkPau7D3GE8+V8R6sQubA9R5foIzGp+85EXCVSCivuxBNAWqcpn72PKYiIcqoViv/kcUDpaEIMBVi1lQ==}
+  call-bind-apply-helpers@1.0.1:
+    resolution: {integrity: sha512-BhYE+WDaywFg2TBWYNXAE+8B1ATnThNBqXHP5nQu0jWJdVvY2hvkpyB3qOmtmDePiS5/BDQ8wASEWGMWRG148g==}
     engines: {node: '>= 0.4'}
 
   call-bind@1.0.8:
@@ -898,10 +889,6 @@ packages:
       supports-color:
         optional: true
 
-  deeks@3.1.0:
-    resolution: {integrity: sha512-e7oWH1LzIdv/prMQ7pmlDlaVoL64glqzvNgkgQNgyec9ORPHrT2jaOqMtRyqJuwWjtfb6v+2rk9pmaHj+F137A==}
-    engines: {node: '>= 16'}
-
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
@@ -970,10 +957,6 @@ packages:
 
   discontinuous-range@1.0.0:
     resolution: {integrity: sha512-c68LpLbO+7kP/b1Hr1qs8/BJ09F5khZGTxqxZuhzxpmwJKOgRFHJWIb9/KmqnqHhLdO55aOxFH/EGBvUQbL/RQ==}
-
-  doc-path@4.1.1:
-    resolution: {integrity: sha512-h1ErTglQAVv2gCnOpD3sFS6uolDbOKHDU1BZq+Kl3npPqroU3dYL42lUgMfd5UimlwtRgp7C9dLGwqQ5D2HYgQ==}
-    engines: {node: '>=16'}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -1160,9 +1143,6 @@ packages:
   express@4.21.2:
     resolution: {integrity: sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==}
     engines: {node: '>= 0.10.0'}
-
-  expressionparser@1.1.5:
-    resolution: {integrity: sha512-9GldsRvXhcJ+ZPiK7fel5KBpgU+LjjQjnyWQVugJcvRc99lXTBICwXKaQV2laZ1KUlTVUBnMmFpgtkMVwwMiHA==}
 
   extendable-error@0.1.7:
     resolution: {integrity: sha512-UOiS2in6/Q0FK0R0q6UY9vYpQ21mr/Qn1KOnte7vsACuNJf514WvCCUHSRCPcgjPT2bAhNIJdlE6bVap1GKmeg==}
@@ -1684,10 +1664,6 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  json-2-csv@5.5.7:
-    resolution: {integrity: sha512-aZ0EOadeNnO4ifF60oXXTH8P177WeHhFLbRLqILW1Kk1gNHlgAOuvddMwEIaxbLpCzx+vXo49whK6AILdg8qLg==}
-    engines: {node: '>= 16'}
-
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
@@ -1806,11 +1782,6 @@ packages:
   mime@1.6.0:
     resolution: {integrity: sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==}
     engines: {node: '>=4'}
-    hasBin: true
-
-  mime@4.0.4:
-    resolution: {integrity: sha512-v8yqInVjhXyqP6+Kw4fV3ZzeMRqEW6FotRsKXjRS5VMTNIuXsdRoAvklpoRgSqXm6o9VNH4/C0mgedko9DdLsQ==}
-    engines: {node: '>=16'}
     hasBin: true
 
   mimic-fn@2.1.0:
@@ -2140,12 +2111,12 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
-  puppeteer-core@23.10.1:
-    resolution: {integrity: sha512-ey6NwixHYEUnhCA/uYi7uQQ4a0CZw4k+MatbHXGl5GEzaiRQziYUxc2HGpdQZ/gnh4KQWAKkocyIg1/dIm5d0g==}
+  puppeteer-core@23.10.2:
+    resolution: {integrity: sha512-SEPjEbhPxRlzjGRCs8skwfnzFQj6XrZZmoMz0JIQbanj0fBpQ5HOGgyQTyh4YOW33q+461plJc5GfsQ+ErVBgQ==}
     engines: {node: '>=18'}
 
-  puppeteer@23.10.1:
-    resolution: {integrity: sha512-kbcO+vu91fgUyBzEwByPe4q5lEEuBq4cuOZnZeRL42G7r5UrfbUFlxBJayXBLBsD6pREdk/92ZFwFQq3MaN6ww==}
+  puppeteer@23.10.2:
+    resolution: {integrity: sha512-Iii2ZwdukXzEGeCxs2/GG8G+dbVCylnlBrTxZnMxLW/7w/ftoGq4VB2Bt1vwrbMIn1XwFqxYEWNEkZpIkcVfwg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -2787,7 +2758,7 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@battis/eslint-config@2.0.0(@eslint/js@9.16.0)(eslint-config-prettier@9.1.0(eslint@9.16.0))(eslint-plugin-html@8.1.2)(eslint-plugin-markdown@5.1.0(eslint@9.16.0))(eslint@9.16.0)(globals@15.13.0)(typescript-eslint@8.17.0(eslint@9.16.0)(typescript@5.7.2))(typescript@5.7.2)':
+  '@battis/eslint-config@2.0.1(@eslint/js@9.16.0)(eslint-config-prettier@9.1.0(eslint@9.16.0))(eslint-plugin-html@8.1.2)(eslint-plugin-markdown@5.1.0(eslint@9.16.0))(eslint@9.16.0)(globals@15.13.0)(typescript-eslint@8.17.0(eslint@9.16.0)(typescript@5.7.2))(typescript@5.7.2)':
     dependencies:
       '@eslint/js': 9.16.0
       eslint: 9.16.0
@@ -3264,7 +3235,7 @@ snapshots:
       '@xml-tools/parser': 1.0.11
       prettier: 3.4.2
 
-  '@puppeteer/browsers@2.5.0':
+  '@puppeteer/browsers@2.6.0':
     dependencies:
       debug: 4.4.0
       extract-zip: 2.0.1
@@ -3643,14 +3614,14 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  call-bind-apply-helpers@1.0.0:
+  call-bind-apply-helpers@1.0.1:
     dependencies:
       es-errors: 1.3.0
       function-bind: 1.1.2
 
   call-bind@1.0.8:
     dependencies:
-      call-bind-apply-helpers: 1.0.0
+      call-bind-apply-helpers: 1.0.1
       es-define-property: 1.0.1
       get-intrinsic: 1.2.5
       set-function-length: 1.2.2
@@ -3805,8 +3776,6 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  deeks@3.1.0: {}
-
   deep-is@0.1.4: {}
 
   default-browser-id@5.0.0: {}
@@ -3872,8 +3841,6 @@ snapshots:
 
   discontinuous-range@1.0.0: {}
 
-  doc-path@4.1.1: {}
-
   dom-serializer@2.0.0:
     dependencies:
       domelementtype: 2.3.0
@@ -3896,7 +3863,7 @@ snapshots:
 
   dunder-proto@1.0.0:
     dependencies:
-      call-bind-apply-helpers: 1.0.0
+      call-bind-apply-helpers: 1.0.1
       es-errors: 1.3.0
       gopd: 1.2.0
 
@@ -4143,8 +4110,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  expressionparser@1.1.5: {}
-
   extendable-error@0.1.7: {}
 
   external-editor@3.1.0:
@@ -4286,7 +4251,7 @@ snapshots:
 
   get-intrinsic@1.2.5:
     dependencies:
-      call-bind-apply-helpers: 1.0.0
+      call-bind-apply-helpers: 1.0.1
       dunder-proto: 1.0.0
       es-define-property: 1.0.1
       es-errors: 1.3.0
@@ -4658,11 +4623,6 @@ snapshots:
 
   jsesc@3.0.2: {}
 
-  json-2-csv@5.5.7:
-    dependencies:
-      deeks: 3.1.0
-      doc-path: 4.1.1
-
   json-buffer@3.0.1: {}
 
   json-parse-better-errors@1.0.2: {}
@@ -4774,8 +4734,6 @@ snapshots:
       mime-db: 1.52.0
 
   mime@1.6.0: {}
-
-  mime@4.0.4: {}
 
   mimic-fn@2.1.0: {}
 
@@ -5098,9 +5056,9 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  puppeteer-core@23.10.1:
+  puppeteer-core@23.10.2:
     dependencies:
-      '@puppeteer/browsers': 2.5.0
+      '@puppeteer/browsers': 2.6.0
       chromium-bidi: 0.8.0(devtools-protocol@0.0.1367902)
       debug: 4.4.0
       devtools-protocol: 0.0.1367902
@@ -5111,13 +5069,13 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@23.10.1(typescript@5.7.2):
+  puppeteer@23.10.2(typescript@5.7.2):
     dependencies:
-      '@puppeteer/browsers': 2.5.0
+      '@puppeteer/browsers': 2.6.0
       chromium-bidi: 0.8.0(devtools-protocol@0.0.1367902)
       cosmiconfig: 9.0.0(typescript@5.7.2)
       devtools-protocol: 0.0.1367902
-      puppeteer-core: 23.10.1
+      puppeteer-core: 23.10.2
       typed-query-selector: 2.12.0
     transitivePeerDependencies:
       - bufferutil
