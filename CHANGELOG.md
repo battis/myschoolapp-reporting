@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.3.3
+
+### Patch Changes
+
+- cc1298e: Significantly more robust download
+
 ## 0.3.2
 
 ### Patch Changes
