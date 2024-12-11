@@ -18,7 +18,7 @@ export type Item = {
 const AWAITING = true;
 const cache: Record<string, Item | typeof AWAITING> = {};
 const ready = new EventEmitter();
-ready.setMaxListeners(100);
+ready.setMaxListeners(1000);
 
 export async function get(
   url: string,
