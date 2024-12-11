@@ -113,7 +113,13 @@ export class Spider {
             ) {
               try {
                 (snapshotComponent[key] as Cache.Item) =
-                  await this.downloader.download(snapshotComponent[key]);
+                  await this.downloader.download(
+                    snapshotComponent[key],
+                    'FriendlyFileName' in snapshotComponent &&
+                      typeof snapshotComponent['FriendlyFileName'] === 'string'
+                      ? snapshotComponent['FriendlyFileName']
+                      : undefined
+                  );
               } catch (error) {
                 if (haltOnError) {
                   throw error;
@@ -122,6 +128,7 @@ export class Spider {
                   cli.log.error(message);
                   (snapshotComponent[key] as Cache.Item) = {
                     original: snapshotComponent[key],
+                    accessed: new Date(),
                     error: message
                   };
                 }

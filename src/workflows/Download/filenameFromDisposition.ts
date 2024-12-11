@@ -15,13 +15,15 @@ type Options = {
  */
 export function filenameFromDisposition({ url, value }: Options): string {
   let filename = path.basename(new URL(url).pathname);
-  try {
-    filename = contentDisposition.parse(value || '').parameters?.filename;
-    cli.log.debug(`${url}: ${filename}`);
-  } catch (error) {
-    cli.log.warning(
-      `Error parsing ${cli.colors.url(url)} {${ContentDisposition}: ${cli.colors.quotedValue(`"${value}"`)}}: ${cli.colors.error(error)}`
-    );
+  if (value) {
+    try {
+      filename = contentDisposition.parse(value || '').parameters?.filename;
+      cli.log.debug(`${url}: ${filename}`);
+    } catch (error) {
+      cli.log.warning(
+        `Error parsing ${cli.colors.url(url)} {${ContentDisposition}: ${cli.colors.quotedValue(`"${value}"`)}}: ${cli.colors.error(error)}`
+      );
+    }
   }
   return filename;
 }

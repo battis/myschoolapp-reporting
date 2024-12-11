@@ -2,6 +2,7 @@ import cli from '@battis/qui-cli';
 import { Mutex } from 'async-mutex';
 import EventEmitter from 'node:events';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { Page, Protocol } from 'puppeteer';
 import * as common from '../../../common.js';
@@ -15,6 +16,12 @@ import { Strategy } from './Strategy.js';
 type PrepareOptions = {
   host: string;
   credentials: common.puppeteer.args.Parsed['loginCredentials'];
+};
+
+type FilepathVariantsOptions = {
+  url: string;
+  filename?: string;
+  guid: string;
 };
 
 export type Options = PrepareOptions & {
@@ -50,14 +57,13 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
     this._parent = parent;
   }
 
-  public async download(url: string) {
+  public async download(url: string, filename?: string) {
     if (this.preparing.isLocked()) {
       await this.preparing.acquire();
       this.preparing.release();
     }
     const page = await this.parent.browser().newPage();
     const client = await page.createCDPSession();
-    let filename: string | undefined = undefined;
 
     await client.send('Fetch.enable', {
       patterns: [
@@ -75,12 +81,14 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
         const reqUrl = new URL(requestPausedEvent.request.url);
         const fetchUrl = new URL(url);
         if (reqUrl.pathname === fetchUrl.pathname) {
-          filename = filenameFromDisposition({
-            url,
-            value: requestPausedEvent.responseHeaders?.find(
-              (header) => header.name === ContentDisposition
-            )?.value
-          });
+          filename =
+            filename ||
+            filenameFromDisposition({
+              url,
+              value: requestPausedEvent.responseHeaders?.find(
+                (header) => header.name === ContentDisposition
+              )?.value
+            });
           await client.send(
             'Fetch.fulfillRequest',
             this.asAttachment(requestPausedEvent)
@@ -95,7 +103,12 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       'Browser.downloadProgress',
       (async (downloadEvent: Protocol.Browser.DownloadProgressEvent) => {
         if (downloadEvent.state === 'completed') {
-          const tempFilepath = path.join(TEMP, downloadEvent.guid);
+          const possiblePaths = this.filepathVariants({
+            url,
+            filename,
+            guid: downloadEvent.guid
+          });
+
           const localPath = new URL(url).pathname;
           const destFilepath = path.resolve(
             process.cwd(),
@@ -106,26 +119,25 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
             fs.mkdirSync(dir, { recursive: true });
           }
           try {
-            fs.renameSync(tempFilepath, destFilepath);
-            cli.log.debug(`Moved temp file to ${cli.colors.url(localPath)}`);
-            this.emit(url, { localPath, filename });
-          } catch (error) {
-            cli.log.warning(`Temp file not present: ${error}`);
-            try {
-              const downloadFilepath = path.join(
-                process.env.HOME!,
-                'Downloads',
-                filename!
-              );
-              fs.renameSync(downloadFilepath, destFilepath);
-              cli.log.debug(
-                `Moved downloaded file to ${cli.colors.url(localPath)}`
-              );
-              this.emit(url, { localPath, filename });
-            } catch (error) {
-              cli.log.error(`Download failed: ${cli.colors.error(error)}`);
-              this.emit(url, { error });
+            let key: keyof typeof possiblePaths;
+            for (key in possiblePaths) {
+              if (fs.existsSync(possiblePaths[key])) {
+                fs.renameSync(possiblePaths[key], destFilepath);
+                cli.log.debug(
+                  `Moved ${key} file to ${cli.colors.url(localPath)}`
+                );
+                this.emit(url, { localPath, filename });
+                return;
+              }
             }
+            const error = cli.colors.error(
+              `Could not find ${cli.colors.url(url)} download`
+            );
+            cli.log.error(error);
+            this.emit(url, { error });
+          } catch (error) {
+            cli.log.error(`Download failed: ${cli.colors.error(error)}`);
+            this.emit(url, { error });
           }
         }
       }).bind(this)
@@ -168,6 +180,38 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       responseHeaders.push(contentDispositionHeader);
     }
     return { ...requestPausedEvent, responseHeaders, responseCode: 200 };
+  }
+
+  private filepathVariants({ url, filename, guid }: FilepathVariantsOptions) {
+    // TODO configurable default Downloads directory
+    const downloadsDir = path.join(os.homedir(), 'Downloads');
+    const urlFilename = path.basename(new URL(url).pathname);
+    const filenameVariants: Record<string, string> = { urlFilename };
+    if (filename) {
+      filenameVariants.filename = filename;
+      if (filename.trim() !== filename) {
+        filenameVariants.trimmed = filename.trim();
+      }
+    }
+    let key: keyof typeof filenameVariants;
+    for (key in filenameVariants) {
+      if (/\.jpg\s*$/i.test(filenameVariants[key])) {
+        filenameVariants[`${key}.jpeg`] = filenameVariants[key].replace(
+          /\.jpg(\s*)$/i,
+          '.jpeg$1'
+        );
+      }
+    }
+    const dirVariants: Record<string, string> = {
+      tmp: path.join(TEMP, guid)
+    };
+    for (key in filenameVariants) {
+      dirVariants[`download ${key}`] = path.join(
+        downloadsDir,
+        filenameVariants[key]
+      );
+    }
+    return dirVariants;
   }
 
   public async quit() {

@@ -16,7 +16,7 @@ export class HTTPFetch implements Strategy {
     this.outputPath = outputPath;
   }
 
-  public async download(url: string) {
+  public async download(url: string, filename?: string) {
     cli.log.debug(`Directly fetching ${cli.colors.url(url)}`);
     const response = await fetch(url);
     if (response.ok && response.body) {
@@ -26,10 +26,12 @@ export class HTTPFetch implements Strategy {
           stream: response.body as ReadableStream,
           outputPath: this.outputPath
         }),
-        filename: filenameFromDisposition({
-          url,
-          value: response.headers.get(ContentDisposition) || undefined
-        })
+        filename:
+          filename ||
+          filenameFromDisposition({
+            url,
+            value: response.headers.get(ContentDisposition) || undefined
+          })
       };
     } else {
       return { error: `${response.status}: ${response.statusText}` };

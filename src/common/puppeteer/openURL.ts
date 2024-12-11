@@ -6,6 +6,13 @@ export async function openURL(
     headless: false,
     defaultViewport: { height: 0, width: 0 },
     devtools: true
+    /*
+    // theoeretically this should work, but it seems to have zero impact on actual behavior
+    downloadBehavior: {
+      policy: 'allowAndName',
+      downloadPath: '/desired/path/to/downloads'
+    }
+    */
   }
 ) {
   const browser = await puppeteer.launch(options);

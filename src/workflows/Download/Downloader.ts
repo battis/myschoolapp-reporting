@@ -19,7 +19,7 @@ export class Downloader implements Strategy {
     this.http = new HTTPFetch({ outputPath });
   }
 
-  public async download(original: string) {
+  public async download(original: string, filename?: string) {
     return await Cache.get(original, async () => {
       let fetchUrl = original;
       if (fetchUrl.slice(0, 2) == '//') {
@@ -40,7 +40,7 @@ export class Downloader implements Strategy {
       return {
         original,
         accessed: new Date(),
-        ...(await strategy.download(fetchUrl))
+        ...(await strategy.download(fetchUrl, filename))
       };
     });
   }
