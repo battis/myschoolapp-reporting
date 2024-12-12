@@ -37,5 +37,8 @@ export const options = {
   },
   groupsPath: {
     description: `Path to output directory or file to save filtered groups listing (include placeholder ${cli.colors.quotedValue('"%TIMESTAMP%"')} to specify its location, otherwise it is added automatically when needed to avoid overwriting existing files)`
+  },
+  year: {
+    description: `If ${cli.colors.value(`--all`)} flag is used, which year to download. (Default: current year)`
   }
 };

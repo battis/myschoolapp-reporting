@@ -49,6 +49,7 @@ type SingleOptions = BaseOptions & {
 type AllOptions = BaseOptions & {
   association?: string;
   termsOffered?: string;
+  year?: string;
   batchSize?: number;
   groupsPath?: string;
   pretty?: boolean;
@@ -131,6 +132,7 @@ export async function captureAll(
   {
     association,
     termsOffered,
+    year,
     groupsPath,
     batchSize = 10,
     pretty,
@@ -140,7 +142,7 @@ export async function captureAll(
   return new Promise<Data[]>(async (resolve) => {
     const _assoc = (association || '').split(',').map((t) => t.trim());
     const _terms = (termsOffered || '').split(',').map((t) => t.trim());
-    const groups = (await Groups.all(page)).filter(
+    const groups = (await Groups.all(page, year)).filter(
       (group) =>
         (association === undefined || _assoc.includes(group.association)) &&
         (termsOffered === undefined ||

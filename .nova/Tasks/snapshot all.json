@@ -11,7 +11,7 @@
     },
     "run" : {
       "enabled" : true,
-      "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot --stdoutLevel all -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso $SSO --outputPath \"$OUT\" --all --association \"Classes\" --pretty \"$URL\"\n"
+      "script" : "source .env\nnode .\/dist\/bin\/msar.js snapshot --stdoutLevel all -u \"$(op item get $OP_ITEM --fields username)\" -p \"$(op item get $OP_ITEM --fields password --reveal)\" --sso $SSO --outputPath \"$OUT\" --all --association \"Classes\"  --year \"$YEAR\" --pretty \"$URL\"\n"
     }
   },
   "buildBeforeRunning" : true,

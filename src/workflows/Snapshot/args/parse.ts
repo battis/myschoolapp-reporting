@@ -13,6 +13,7 @@ export function parse(values: Record<string, any>): Result {
     groupsPath,
     association,
     termsOffered,
+    year,
     format = 'json',
     contextLabelId,
     editMode,
@@ -50,7 +51,7 @@ export function parse(values: Record<string, any>): Result {
       gradebook
     },
     all,
-    allOptions: { association, termsOffered, groupsPath, batchSize },
+    allOptions: { association, termsOffered, year, groupsPath, batchSize },
     ...commonParsed
   };
 }
