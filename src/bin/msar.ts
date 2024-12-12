@@ -8,6 +8,7 @@ const [command] = process.argv.splice(2, 1);
 
 const commands = fs
   .readdirSync(path.join(import.meta.dirname, 'commands'))
+  .filter((f) => !/\.map$/.test(f))
   .map((command) => command.replace(/\.[jt]s$/, ''));
 const ext =
   path.basename(path.resolve(import.meta.dirname, '..')) === 'dist'
