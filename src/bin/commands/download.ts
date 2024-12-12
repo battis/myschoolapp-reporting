@@ -110,5 +110,4 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   spinner.succeed(
     `Snapshot supporting files exported to ${cli.colors.url(path.dirname(indexPath!))}`
   );
-  process.exit(0); // TODO unclear why the process needs to be explicitly ended
 })();

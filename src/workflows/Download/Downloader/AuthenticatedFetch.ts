@@ -215,6 +215,6 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
   }
 
   public async quit() {
-    await this.parent.close();
+    await this.parent.browser().close();
   }
 }
