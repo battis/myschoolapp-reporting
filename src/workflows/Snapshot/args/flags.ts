@@ -5,11 +5,7 @@ export const flags = {
   ...common.args.flags,
   all: {
     short: 'A',
-    description: `Capture all sections (default: ${cli.colors.value('false')}, positional argument is used to identify MySchoolApp instance)`,
-    default: false
-  },
-  editMode: {
-    description: '(default: false)',
+    description: `Capture all sections (default: ${cli.colors.value('false')}, positional argument ${cli.colors.value(`arg0`)} is used to identify MySchoolApp instance)`,
     default: false
   },
   active: {
@@ -38,7 +34,7 @@ export const flags = {
     short: 'a',
     description: `Include the course Assignments in the snapshot (default ${cli.colors.value('true')}, requires ${common.oxfordComma(
       Object.keys(common.SkyAPI.args.options).map((option) =>
-        cli.colors.value(option)
+        cli.colors.value(`--${option}`)
       )
     )} options set)`,
     default: true

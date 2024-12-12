@@ -8,8 +8,7 @@ export const options = {
     default: new Date().toLocaleDateString('en-US')
   },
   toDate: {
-    description:
-      'ending date for data-based filter where relevant (default: none)',
+    description: `ending date for data-based filter where relevant (default: ${cli.colors.value('undefined')})`,
     default: ''
   },
   contextLabelId: {
@@ -17,7 +16,7 @@ export const options = {
     default: '2'
   },
   association: {
-    description: `Comma-separated list of group associations to include if ${cli.colors.value('all')} is defined. Possible values: ${common.oxfordComma(
+    description: `Comma-separated list of group associations to include if ${cli.colors.value('--all')} flag is used. Possible values: ${common.oxfordComma(
       [
         'Activities',
         'Advisories',
@@ -29,7 +28,7 @@ export const options = {
     )}`
   },
   termsOffered: {
-    description: `Comma-separated list of terms to include if ${cli.colors.value('all')} is defined`
+    description: `Comma-separated list of terms to include if ${cli.colors.value('--all')} flag is used`
   },
   batchSize: {
     description: `Number of simultaneous requests to batch together (default: ${cli.colors.value(20)})`,
