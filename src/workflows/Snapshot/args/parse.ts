@@ -1,10 +1,10 @@
 import * as common from '../../../common.js';
-import * as Snapshot from '../Snapshot.js';
+import * as Manager from '../Manager.js';
 
 type Result = {
-  snapshotOptions: Snapshot.SingleOptions;
+  snapshotOptions: Manager.Single.Options;
   all: boolean;
-  allOptions: Snapshot.AllOptions;
+  allOptions: Manager.All.Options;
 } & ReturnType<typeof common.args.parse> &
   ReturnType<typeof common.SkyAPI.args.parse>;
 

@@ -9,8 +9,7 @@ export async function capture(
   groupId: string,
   ignoreErrors = true
 ): Promise<Data | undefined> {
-  const spinner = cli.spinner();
-  spinner.start(`Group ${groupId}: Capturing section info`);
+  cli.log.debug(`Group ${groupId}: Start capturing section info`);
   try {
     const info: api.DataDirect.SectionInfo | undefined = await page.evaluate(
       async (groupId) =>
@@ -27,12 +26,12 @@ export async function capture(
         }, undefined),
       groupId
     );
-    spinner.succeed(`Group ${groupId}: Section info captured`);
+    cli.log.debug(`Group ${groupId}: Section info captured`);
     return info as api.DataDirect.SectionInfo;
   } catch (error) {
     const message = `Group ${groupId}: Error capturing section info: ${cli.colors.error(error || 'unknown')}`;
     if (ignoreErrors) {
-      spinner.fail(message);
+      cli.log.error(message);
       return undefined;
     } else {
       throw new Error(message);

@@ -13,8 +13,7 @@ export async function capture(
   params: URLSearchParams,
   ignoreErrors = true
 ): Promise<Data | undefined> {
-  const spinner = cli.spinner();
-  spinner.start(`Group ${groupId}: Capturing bulletin board`);
+  cli.log.debug(`Group ${groupId}: Start capturing bulletin board`);
   try {
     const BulletinBoard = await page.evaluate(
       async (groupId: string, params: string | URLSearchParams) => {
@@ -84,12 +83,12 @@ export async function capture(
       params.toString()
     );
 
-    spinner.succeed(`Group ${groupId}: Bulletin board captured`);
+    cli.log.debug(`Group ${groupId}: Bulletin board captured`);
     return BulletinBoard;
   } catch (error) {
     const message = `Group ${groupId}: Error capturing bulletin board: ${cli.colors.error(error || 'unknown')}`;
     if (ignoreErrors) {
-      spinner.fail(message);
+      cli.log.error(message);
       return undefined;
     } else {
       throw new Error(message);

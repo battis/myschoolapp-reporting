@@ -3,8 +3,7 @@ import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
 
 export async function all(page: Page, year?: string) {
-  const spinner = cli.spinner();
-  spinner.start('Listing all groups');
+  cli.log.debug(`Requesting list of all groups for ${year}`);
   if (!year) {
     const now = new Date();
     if (now.getMonth() > 6) {
@@ -23,6 +22,6 @@ export async function all(page: Page, year?: string) {
     },
     year
   );
-  spinner.succeed(`${groups.length} groups found`);
+  cli.log.info(`${groups.length} groups found for ${year}`);
   return groups;
 }

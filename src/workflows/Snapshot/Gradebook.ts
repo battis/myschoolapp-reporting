@@ -15,8 +15,7 @@ export async function capture(
   params: URLSearchParams,
   ignoreErrors = true
 ): Promise<Data | undefined> {
-  const spinner = cli.spinner();
-  spinner.start(`Group ${groupId}: Capturing gradebook`);
+  cli.log.debug(`Group ${groupId}: Start capturing gradebook`);
   try {
     const gradebook = await page.evaluate(
       async (groupId: string, params: string) => {
@@ -42,12 +41,12 @@ export async function capture(
       groupId,
       params.toString()
     );
-    spinner.succeed(`Group ${groupId}: Gradebook captured`);
+    cli.log.debug(`Group ${groupId}: Gradebook captured`);
     return gradebook;
   } catch (error) {
     const message = `Group ${groupId}: Error capturing gradebook: ${cli.colors.error(error || 'unknown')}`;
     if (ignoreErrors) {
-      spinner.fail(message);
+      cli.log.error(message);
       return undefined;
     } else {
       throw new Error(message);

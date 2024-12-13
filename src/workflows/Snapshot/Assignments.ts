@@ -12,8 +12,7 @@ export async function capture(
   _: URLSearchParams,
   options: Options
 ) {
-  const spinner = cli.spinner();
-  spinner.start(`Group ${groupId}: Capturing assignments`);
+  cli.log.debug(`Group ${groupId}: Start capturing assignments`);
   await common.SkyAPI.init(options);
 
   const assignmentList = (await common.SkyAPI.fetch(
@@ -70,6 +69,6 @@ export async function capture(
       await completion();
     }
   }
-  spinner.succeed(`Group ${groupId}: Assignments captured`);
+  cli.log.debug(`Group ${groupId}: Assignments captured`);
   return assignments;
 }

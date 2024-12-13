@@ -36,23 +36,32 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   values.username = '';
   values.password = '';
 
+  const spinner = cli.spinner();
   if (all) {
-    await Snapshot.captureAll(page, {
+    spinner.start(`Capturing multiple snapshots`);
+    const snapshots = await Snapshot.captureAll(page, {
       ...snapshotOptions,
       ...allOptions,
       ...skyApiOptons,
       ...outputOptions
     });
+    spinner.succeed(`Captured ${snapshots.length} snapshots`);
   } else {
-    await Snapshot.capture(page, {
+    spinner.start(`Capturing snapshot from ${cli.colors.url(url)}`);
+    const snapshot = await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
       ...skyApiOptons,
       ...outputOptions
     });
+    spinner.succeed(
+      `Captured snapshot of ${snapshot?.SectionInfo?.Teacher}'s ${snapshot?.SectionInfo?.SchoolYear} ${snapshot?.SectionInfo?.Duration} ${snapshot?.SectionInfo?.GroupName}`
+    );
   }
 
   if (quit) {
     await page.browser().close();
+  } else {
+    cli.log.info('Quit the Chrome Test app to end.');
   }
 })();
