@@ -65,7 +65,7 @@ export async function capture(
       complete = false;
       await page.goto(
         `https://${host}/lms-assignment/assignment/assignment-preview/${assignment.index_id}`,
-        { timeout: 300000 }
+        { timeout: 0 } // FIXME disabling timeout is not really a wise option
       );
       await completion();
     }

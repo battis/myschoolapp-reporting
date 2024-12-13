@@ -113,7 +113,7 @@ export async function capture(
 
     if ('Teacher' in snapshot.SectionInfo) {
       spinner.succeed(
-        `Captured snapshot of ${snapshot.SectionInfo.Teacher}'s ${snapshot.SectionInfo.SchoolYear} ${snapshot.SectionInfo.Duration} ${snapshot.SectionInfo.GroupName}`
+        `Group ${snapshot.SectionInfo.Id}: Snapshot captured (${snapshot.SectionInfo.Teacher}'s ${snapshot.SectionInfo.SchoolYear} ${snapshot.SectionInfo.Duration} ${snapshot.SectionInfo.GroupName})`
       );
     } else {
       spinner.warn(`Captured snapshot of section ${groupId} with errors`);
@@ -179,7 +179,7 @@ export async function captureAll(
       next += 1;
 
       if (i < groups.length) {
-        cli.log.debug(`Processing group ${i} of ${groups.length}`);
+        cli.log.debug(`Group ${i} of ${groups.length}`);
         const snapshot = await capture(page, {
           groupId: groups[i].lead_pk.toString(),
           ...options
