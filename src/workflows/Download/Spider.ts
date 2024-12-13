@@ -36,16 +36,14 @@ export class Spider {
   ) {
     if (snapshot) {
       cli.log.debug(
-        `Group ${Snapshot.isApiError(snapshot.SectionInfo) ? cli.colors.error('unknown') : snapshot.SectionInfo.Id}: Downloading supporting files`
+        `Group ${snapshot.SectionInfo?.Id || cli.colors.error('unknown')}: Downloading supporting files`
       );
       await this.traverse(snapshot, {
         host: snapshot.Metadata.Host,
         ...options,
         pathToComponent: path.basename(outputPath)
       });
-      const indexName = Snapshot.isApiError(snapshot.SectionInfo)
-        ? 'index.json'
-        : `${snapshot.SectionInfo.Id}.json`;
+      const indexName = `${snapshot.SectionInfo?.Id || 'index'}.json`;
       await common.output.writeJSON(
         await common.output.avoidOverwrite(path.join(outputPath, indexName)),
         snapshot,
@@ -54,7 +52,7 @@ export class Spider {
         }
       );
       cli.log.debug(
-        `Group ${Snapshot.isApiError(snapshot.SectionInfo) ? cli.colors.error('unknown') : snapshot.SectionInfo.Id}: Supporting files exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
+        `Group ${snapshot.SectionInfo?.Id || cli.colors.error('unknown')}: Supporting files exported to ${cli.colors.url(outputPath)}/${cli.colors.value(indexName)}`
       );
       return indexName;
     } else {

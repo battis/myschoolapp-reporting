@@ -43,5 +43,9 @@ export const flags = {
     description: `Include the course Gradebook in the snapshot (default ${cli.colors.value('true')})`,
     short: 'g',
     default: true
+  },
+  ignoreErrors: {
+    description: `Continue collecting snapshots even if errors are encountered (default: ${cli.colors.value('true')}, use ${cli.colors.value('--no-ignoreErrors')} to halt on errors)`,
+    default: true
   }
 };

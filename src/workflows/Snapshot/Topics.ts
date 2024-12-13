@@ -1,7 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
-import { ApiError } from './ApiError.js';
 
 type Data = api.DataDirect.SectionTopic & {
   Content?: (api.DataDirect.ContentItem & {
@@ -13,8 +12,9 @@ type Data = api.DataDirect.SectionTopic & {
 export async function capture(
   page: Page,
   groupId: string,
-  params: URLSearchParams
-): Promise<Data[] | ApiError> {
+  params: URLSearchParams,
+  ignoreErrors = true
+): Promise<Data[] | undefined> {
   const spinner = cli.spinner();
   spinner.start(`Group ${groupId}: Capturing topics`);
   try {
@@ -110,9 +110,12 @@ export async function capture(
     spinner.succeed(`Group ${groupId}: Topics captured`);
     return topics;
   } catch (error) {
-    spinner.fail(
-      `Group ${groupId}: Error capturing topics: ${cli.colors.error(error || 'unknown')}`
-    );
-    return { error };
+    const message = `Group ${groupId}: Error capturing topics: ${cli.colors.error(error || 'unknown')}`;
+    if (ignoreErrors) {
+      spinner.fail();
+      return undefined;
+    } else {
+      throw new Error(message);
+    }
   }
 }

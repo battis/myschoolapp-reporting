@@ -6,7 +6,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
 import * as common from '../../common.js';
-import { isApiError } from './ApiError.js';
 import * as Assignments from './Assignments.js';
 import * as BulletinBoard from './BulletinBoard.js';
 import * as Gradebook from './Gradebook.js';
@@ -40,6 +39,7 @@ type BaseOptions = {
   assignments?: boolean;
   gradebook?: boolean;
   params?: URLSearchParams;
+  ignoreErrors?: boolean;
 } & common.SkyAPI.args.Parsed['skyApiOptons'];
 
 export type SingleOptions = BaseOptions & {
@@ -67,6 +67,7 @@ export async function capture(
     params = new URLSearchParams(),
     outputPath,
     pretty,
+    ignoreErrors,
     ...oauthOptions
   }: SingleOptions & Partial<common.output.args.Parsed['outputOptions']>
 ) {
@@ -86,10 +87,14 @@ export async function capture(
       `https://${hostUrl.host}/app/faculty#academicclass/${groupId}/0/bulletinboard`
     );
     const [s, b, t, g] = await Promise.all([
-      SectionInfo.capture(page, groupId),
-      bulletinBoard ? BulletinBoard.capture(page, groupId, params) : undefined,
-      topics ? Topics.capture(page, groupId, params) : undefined,
-      gradebook ? Gradebook.capture(page, groupId, params) : undefined
+      SectionInfo.capture(page, groupId, ignoreErrors),
+      bulletinBoard
+        ? BulletinBoard.capture(page, groupId, params, ignoreErrors)
+        : undefined,
+      topics ? Topics.capture(page, groupId, params, ignoreErrors) : undefined,
+      gradebook
+        ? Gradebook.capture(page, groupId, params, ignoreErrors)
+        : undefined
     ]);
 
     const snapshot: Data = {
@@ -113,7 +118,7 @@ export async function capture(
       Gradebook: g
     };
 
-    if ('Teacher' in snapshot.SectionInfo) {
+    if (snapshot.SectionInfo && 'Teacher' in snapshot.SectionInfo) {
       spinner.succeed(
         `Group ${snapshot.SectionInfo.Id}: Snapshot captured (${snapshot.SectionInfo.Teacher}'s ${snapshot.SectionInfo.SchoolYear} ${snapshot.SectionInfo.Duration} ${snapshot.SectionInfo.GroupName})`
       );
@@ -124,7 +129,7 @@ export async function capture(
     await page.close();
     if (outputPath) {
       let basename = 'snapshot';
-      if (!isApiError(snapshot.SectionInfo)) {
+      if (snapshot.SectionInfo) {
         basename = `${snapshot.SectionInfo.SchoolYear} - ${snapshot.SectionInfo.Teacher} - ${snapshot.SectionInfo.GroupName} - ${snapshot.SectionInfo.Id}`;
       }
       const filepath = await common.output.avoidOverwrite(
@@ -161,6 +166,7 @@ export async function captureAll(
     outputPath,
     batchSize = 10,
     pretty,
+    ignoreErrors,
     ...options
   }: AllOptions & common.output.args.Parsed['outputOptions']
 ) {
@@ -199,20 +205,31 @@ export async function captureAll(
     let next = 0;
     let complete = 0;
     const progress = new events.EventEmitter();
+    const errors: typeof groups = [];
     async function nextGroup() {
       const i = next;
       next += 1;
 
       if (i < groups.length) {
         cli.log.debug(`Group ${i} of ${groups.length}`);
-        const snapshot = await capture(parent, {
-          groupId: groups[i].lead_pk.toString(),
-          ...options
-        });
-        await common.output.writeJSON(
-          path.join(TEMP, `${pad(i)}.json`),
-          snapshot
-        );
+        try {
+          const snapshot = await capture(parent, {
+            groupId: groups[i].lead_pk.toString(),
+            ignoreErrors,
+            ...options
+          });
+          await common.output.writeJSON(
+            path.join(TEMP, `${pad(i)}.json`),
+            snapshot
+          );
+        } catch (error) {
+          if (ignoreErrors) {
+            cli.log.error(cli.colors.error(error));
+            errors.push(groups[i]);
+          } else {
+            throw error;
+          }
+        }
         progress.emit('ready');
       }
     }
@@ -264,6 +281,12 @@ export async function captureAll(
           gradebook,
           params
         });
+        if (errors.length) {
+          common.output.writeJSON(
+            filepath.replace(/\.json$/, '.errors.json'),
+            errors
+          );
+        }
         resolve(data);
       }
     });

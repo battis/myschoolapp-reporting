@@ -1,14 +1,14 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
-import { ApiError } from './ApiError.js';
 
 export type Data = api.DataDirect.SectionInfo;
 
 export async function capture(
   page: Page,
-  groupId: string
-): Promise<Data | ApiError> {
+  groupId: string,
+  ignoreErrors = true
+): Promise<Data | undefined> {
   const spinner = cli.spinner();
   spinner.start(`Group ${groupId}: Capturing section info`);
   try {
@@ -30,9 +30,12 @@ export async function capture(
     spinner.succeed(`Group ${groupId}: Section info captured`);
     return info as api.DataDirect.SectionInfo;
   } catch (error) {
-    spinner.fail(
-      `Group ${groupId}: Error capturing section info: ${cli.colors.error(error || 'unknown')}`
-    );
-    return { error };
+    const message = `Group ${groupId}: Error capturing section info: ${cli.colors.error(error || 'unknown')}`;
+    if (ignoreErrors) {
+      spinner.fail(message);
+      return undefined;
+    } else {
+      throw new Error(message);
+    }
   }
 }

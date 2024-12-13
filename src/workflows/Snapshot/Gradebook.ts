@@ -1,7 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
-import { ApiError } from './ApiError.js';
 
 export type Data = {
   markingPeriods?: {
@@ -13,8 +12,9 @@ export type Data = {
 export async function capture(
   page: Page,
   groupId: string,
-  params: URLSearchParams
-): Promise<Data | ApiError> {
+  params: URLSearchParams,
+  ignoreErrors = true
+): Promise<Data | undefined> {
   const spinner = cli.spinner();
   spinner.start(`Group ${groupId}: Capturing gradebook`);
   try {
@@ -45,9 +45,12 @@ export async function capture(
     spinner.succeed(`Group ${groupId}: Gradebook captured`);
     return gradebook;
   } catch (error) {
-    spinner.fail(
-      `Group ${groupId}: Error capturing gradebook: ${cli.colors.error(error || 'unknown')}`
-    );
-    return { error };
+    const message = `Group ${groupId}: Error capturing gradebook: ${cli.colors.error(error || 'unknown')}`;
+    if (ignoreErrors) {
+      spinner.fail(message);
+      return undefined;
+    } else {
+      throw new Error(message);
+    }
   }
 }

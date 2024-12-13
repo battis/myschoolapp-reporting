@@ -1,7 +1,6 @@
 import cli from '@battis/qui-cli';
 import { Page } from 'puppeteer';
 import * as api from '../../Blackbaud/api.js';
-import { ApiError } from './ApiError.js';
 
 export type Data = (api.DataDirect.BulletinBoardContent & {
   Content?: api.DataDirect.ContentItem | api.DataDirect.ContentItem[];
@@ -11,8 +10,9 @@ export type Data = (api.DataDirect.BulletinBoardContent & {
 export async function capture(
   page: Page,
   groupId: string,
-  params: URLSearchParams
-): Promise<Data | ApiError> {
+  params: URLSearchParams,
+  ignoreErrors = true
+): Promise<Data | undefined> {
   const spinner = cli.spinner();
   spinner.start(`Group ${groupId}: Capturing bulletin board`);
   try {
@@ -87,9 +87,12 @@ export async function capture(
     spinner.succeed(`Group ${groupId}: Bulletin board captured`);
     return BulletinBoard;
   } catch (error) {
-    spinner.fail(
-      `Group ${groupId}: Error capturing bulletin board: ${cli.colors.error(error || 'unknown')}`
-    );
-    return { error };
+    const message = `Group ${groupId}: Error capturing bulletin board: ${cli.colors.error(error || 'unknown')}`;
+    if (ignoreErrors) {
+      spinner.fail(message);
+      return undefined;
+    } else {
+      throw new Error(message);
+    }
   }
 }
