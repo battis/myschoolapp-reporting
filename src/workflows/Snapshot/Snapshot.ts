@@ -55,8 +55,6 @@ export type AllOptions = BaseOptions & {
   groupsPath?: string;
 };
 
-type SnapshotMetadata = BaseMetadata & (SingleOptions | AllOptions);
-
 export async function capture(
   parent: Page,
   {
@@ -129,11 +127,20 @@ export async function capture(
       if (!isApiError(snapshot.SectionInfo)) {
         basename = `${snapshot.SectionInfo.SchoolYear} - ${snapshot.SectionInfo.Teacher} - ${snapshot.SectionInfo.GroupName} - ${snapshot.SectionInfo.Id}`;
       }
+      const filepath = await common.output.avoidOverwrite(
+        common.output.filePathFromOutputPath(outputPath, `${basename}.json`)
+      );
+      common.output.writeJSON(filepath, snapshot, { pretty });
       common.output.writeJSON(
-        await common.output.avoidOverwrite(
-          common.output.filePathFromOutputPath(outputPath, `${basename}.json`)
-        ),
-        snapshot,
+        filepath.replace(/\.json$/, '.metadata.json'),
+        {
+          ...snapshot.Metadata,
+          bulletinBoard,
+          topics,
+          assignments,
+          gradebook,
+          params
+        },
         { pretty }
       );
     }
@@ -175,13 +182,13 @@ export async function captureAll(
     );
     spinner.info(`${groups.length} groups match filters`);
     if (groupsPath) {
-      common.output.writeJSON(
-        common.output.filePathFromOutputPath(groupsPath, 'groups.json'),
-        groups,
-        {
-          pretty
-        }
+      groupsPath = common.output.filePathFromOutputPath(
+        groupsPath,
+        'groups.json'
       );
+      common.output.writeJSON(groupsPath, groups, {
+        pretty
+      });
     }
 
     const zeros = new Array((groups.length + '').length).fill(0).join('');
@@ -215,22 +222,48 @@ export async function captureAll(
     });
 
     const data: Data[] = [];
+    let Start = new Date();
+    let Finish = new Date('1/1/1970');
+    let first: BaseMetadata | undefined = undefined;
     progress.on('ready', async () => {
       if (complete === groups.length) {
         const partials = await fs.readdir(TEMP);
         for (const partial of partials) {
-          data.push(
-            JSON.parse((await fs.readFile(path.join(TEMP, partial))).toString())
-          );
+          const snapshot = JSON.parse(
+            (await fs.readFile(path.join(TEMP, partial))).toString()
+          ) as Data;
+          data.push(snapshot);
+          if (snapshot.Metadata.Start < Start) {
+            Start = snapshot.Metadata.Start;
+          }
+          if (snapshot.Metadata.Finish > Finish) {
+            Finish = snapshot.Metadata.Finish;
+          }
+          if (!first) {
+            first = snapshot.Metadata;
+          }
         }
         await fs.rm(TEMP, { recursive: true });
-        common.output.writeJSON(
-          await common.output.avoidOverwrite(
-            common.output.filePathFromOutputPath(outputPath, 'snapshot.json'),
-            common.output.AddTimestamp
-          ),
-          { pretty }
+        const filepath = await common.output.avoidOverwrite(
+          common.output.filePathFromOutputPath(outputPath, 'snapshot.json'),
+          common.output.AddTimestamp
         );
+        const { bulletinBoard, topics, assignments, gradebook, params } =
+          options;
+        common.output.writeJSON(filepath, { pretty });
+        common.output.writeJSON(filepath.replace(/\.json$/, '.metadata.json'), {
+          ...first,
+          Start,
+          Finish,
+          year,
+          batchSize,
+          groupsPath,
+          bulletinBoard,
+          topics,
+          assignments,
+          gradebook,
+          params
+        });
         resolve(data);
       }
     });
