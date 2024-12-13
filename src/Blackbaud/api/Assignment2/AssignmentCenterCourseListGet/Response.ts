@@ -43,7 +43,7 @@ type Assignment = {
   ShowAssignmentPreview: boolean;
   NewAssessmentInd: boolean;
   AssessmentId: number;
-  SectionBlock: any | null;
+  SectionBlock: any | null; // TODO Assignent2/AssignmentCenterCourseListGet/Response.Assignment.SectionBlock type
 };
 
 type FilterSummary = {

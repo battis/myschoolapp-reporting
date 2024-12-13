@@ -3,6 +3,6 @@ export type BulletinBoardContent = {
   RowIndex: number;
   ColumnIndex: number;
   CellIndex: 2;
-  GenericSettings: any;
+  GenericSettings: any; // TODO DataDirect/BulletinBoardContent.GenericSettings type
   PendingInd: boolean;
 };

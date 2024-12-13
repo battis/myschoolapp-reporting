@@ -51,7 +51,7 @@ type Filter = {
   Selected: boolean;
   SelectedOption: number;
   HasChildFilters: boolean;
-  SelectedValues: any[];
+  SelectedValues: any[]; // TODO Assignent2/AssignmentCenterCourseListGet/Payload.Filter.SelectedValues type
   FilterClass: string;
   ServiceFilterClass: string;
   FilterLabel: string;
@@ -74,7 +74,7 @@ export type Payload = {
   TotalCount: number;
   PageOnClient: boolean;
   Filters: Filter[];
-  Categories: any[];
+  Categories: any[]; // TODO Assignent2/AssignmentCenterCourseListGet/Payload.Payload.Categories type
   AlwaysSearchServer: boolean;
   Name: string;
   Id: number;
