@@ -43,7 +43,6 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     );
   } else {
     if (fs.existsSync(_outputPath)) {
-      // FIXME can't seem to count past 1
       outputPath = await common.output.avoidOverwrite(
         path.join(_outputPath, path.basename(snapshotPath!, '.json'))
       );

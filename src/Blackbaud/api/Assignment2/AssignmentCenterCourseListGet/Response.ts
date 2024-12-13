@@ -43,7 +43,7 @@ type Assignment = {
   ShowAssignmentPreview: boolean;
   NewAssessmentInd: boolean;
   AssessmentId: number;
-  SectionBlock: any | null; // FIXME type
+  SectionBlock: any | null;
 };
 
 type FilterSummary = {

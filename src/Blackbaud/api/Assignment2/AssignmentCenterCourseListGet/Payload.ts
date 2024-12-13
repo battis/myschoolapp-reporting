@@ -51,7 +51,7 @@ type Filter = {
   Selected: boolean;
   SelectedOption: number;
   HasChildFilters: boolean;
-  SelectedValues: any[]; // FIXME type
+  SelectedValues: any[];
   FilterClass: string;
   ServiceFilterClass: string;
   FilterLabel: string;
@@ -74,7 +74,7 @@ export type Payload = {
   TotalCount: number;
   PageOnClient: boolean;
   Filters: Filter[];
-  Categories: any[]; // FIXME type
+  Categories: any[];
   AlwaysSearchServer: boolean;
   Name: string;
   Id: number;

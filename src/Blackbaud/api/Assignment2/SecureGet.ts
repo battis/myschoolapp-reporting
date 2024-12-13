@@ -14,7 +14,7 @@ type Duration = {
   Current: boolean;
   dd_id: number;
   SelectedInd: number;
-  SchoolLevelIds: any[]; // FIXME (probably number[])
+  SchoolLevelIds: any[];
 };
 
 type Section = {
@@ -97,7 +97,7 @@ type Lti = {
   SharedSecret: string;
   CredentialsTypeId: number;
   OutcomesInd: boolean;
-  Parameters: any[]; // FIXME type
+  Parameters: any[];
   LtiOauth2Ind: boolean;
   LineItemTag: string;
   LineItemResourceId: string;
@@ -156,7 +156,7 @@ export type Response = {
   DropboxInd: boolean;
   DropboxNumFiles: number;
   DropboxResub: boolean;
-  LocalNow: any | null; // FIXME type
+  LocalNow: any | null;
   AssignmentStatus: number;
   HasGrade: NumericBoolean;
   MissingInd: NumericBoolean;
