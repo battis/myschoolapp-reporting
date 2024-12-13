@@ -36,17 +36,15 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   values.username = '';
   values.password = '';
 
-  const spinner = cli.spinner();
   if (all) {
-    spinner.start(`Capturing multiple snapshots`);
-    const snapshots = await Snapshot.captureAll(page, {
+    await Snapshot.captureAll(page, {
       ...snapshotOptions,
       ...allOptions,
       ...skyApiOptons,
       ...outputOptions
     });
-    spinner.succeed(`Captured ${snapshots.length} snapshots`);
   } else {
+    const spinner = cli.spinner();
     spinner.start(`Capturing snapshot from ${cli.colors.url(url)}`);
     const snapshot = await Snapshot.capture(page, {
       url,

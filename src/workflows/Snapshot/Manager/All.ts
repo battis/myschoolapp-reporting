@@ -1,4 +1,5 @@
 import cli from '@battis/qui-cli';
+import cliProgress from 'cli-progress';
 import crypto from 'node:crypto';
 import events from 'node:events';
 import fs from 'node:fs/promises';
@@ -49,6 +50,8 @@ export async function capture(
       `Snapshot temporary files will be saved to ${cli.colors.url(TEMP)}`
     );
     cli.log.info(`${groups.length} groups match filters`);
+    const progressBars = new cliProgress.MultiBar({});
+    const progress = progressBars.create(groups.length, 0);
     if (groupsPath) {
       groupsPath = common.output.filePathFromOutputPath(
         groupsPath,
@@ -66,14 +69,14 @@ export async function capture(
 
     let next = 0;
     let complete = 0;
-    const progress = new events.EventEmitter();
+    const queue = new events.EventEmitter();
     const errors: typeof groups = [];
     async function nextGroup() {
       const i = next;
       next += 1;
 
       if (i < groups.length) {
-        cli.log.debug(`Group ${i} of ${groups.length}`);
+        cli.log.debug(`Group ${groups[i].lead_pk}: ${pad(i)}.json`);
         try {
           const snapshot = await Single.capture(parent, {
             groupId: groups[i].lead_pk.toString(),
@@ -84,6 +87,9 @@ export async function capture(
             path.join(TEMP, `${pad(i)}.json`),
             snapshot
           );
+          progressBars.log(
+            `${snapshot?.SectionInfo?.SchoolYear} / ${snapshot?.SectionInfo?.Teacher} / ${snapshot?.SectionInfo?.GroupName} / ${snapshot?.SectionInfo?.Block}\n`
+          );
         } catch (error) {
           if (ignoreErrors) {
             cli.log.error(cli.colors.error(error));
@@ -92,10 +98,11 @@ export async function capture(
             throw error;
           }
         }
-        progress.emit('ready');
+        progress.increment();
+        queue.emit('ready');
       }
     }
-    progress.on('ready', async () => {
+    queue.on('ready', async () => {
       complete += 1;
       nextGroup();
     });
@@ -104,7 +111,7 @@ export async function capture(
     let Start = new Date();
     let Finish = new Date('1/1/1970');
     let first: Single.Metadata | undefined = undefined;
-    progress.on('ready', async () => {
+    queue.on('ready', async () => {
       if (complete === groups.length) {
         const partials = await fs.readdir(TEMP);
         for (const partial of partials) {
@@ -151,6 +158,7 @@ export async function capture(
         } else {
           await fs.rm(TEMP, { recursive: true });
         }
+        progressBars.stop();
         resolve(data);
       }
     });

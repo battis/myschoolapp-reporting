@@ -103,7 +103,7 @@ export async function capture(
     };
 
     if (snapshot.SectionInfo && 'Teacher' in snapshot.SectionInfo) {
-      cli.log.info(
+      cli.log.debug(
         `Group ${snapshot.SectionInfo.Id}: Snapshot captured (${snapshot.SectionInfo.Teacher}'s ${snapshot.SectionInfo.SchoolYear} ${snapshot.SectionInfo.Duration} ${snapshot.SectionInfo.GroupName})`
       );
     } else {
