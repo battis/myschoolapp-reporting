@@ -5,7 +5,7 @@ export function filePathFromOutputPath(
   name: string
 ) {
   if (!outputPath) {
-    return undefined;
+    return name;
   }
   const outExt = path.extname(outputPath);
   const nameExt = path.extname(name);

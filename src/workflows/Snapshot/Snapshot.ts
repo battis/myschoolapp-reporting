@@ -6,6 +6,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
 import * as common from '../../common.js';
+import { isApiError } from './ApiError.js';
 import * as Assignments from './Assignments.js';
 import * as BulletinBoard from './BulletinBoard.js';
 import * as Gradebook from './Gradebook.js';
@@ -16,7 +17,7 @@ import * as Topics from './Topics.js';
 const TEMP = path.join('/tmp/msar/snapshot', crypto.randomUUID());
 const tabMutex = new Mutex();
 
-type Metadata = {
+type BaseMetadata = {
   Host: string;
   User: string;
   Start: Date;
@@ -24,7 +25,7 @@ type Metadata = {
 };
 
 export type Data = {
-  Metadata: Metadata;
+  Metadata: BaseMetadata;
   SectionInfo: Awaited<ReturnType<typeof SectionInfo.capture>>;
   GroupId: string;
   BulletinBoard?: Awaited<ReturnType<typeof BulletinBoard.capture>>;
@@ -41,19 +42,20 @@ type BaseOptions = {
   params?: URLSearchParams;
 } & common.SkyAPI.args.Parsed['skyApiOptons'];
 
-type SingleOptions = BaseOptions & {
+export type SingleOptions = BaseOptions & {
   url?: string;
   groupId?: string;
 };
 
-type AllOptions = BaseOptions & {
+export type AllOptions = BaseOptions & {
   association?: string;
   termsOffered?: string;
   year?: string;
   batchSize?: number;
   groupsPath?: string;
-  pretty?: boolean;
 };
+
+type SnapshotMetadata = BaseMetadata & (SingleOptions | AllOptions);
 
 export async function capture(
   parent: Page,
@@ -65,8 +67,10 @@ export async function capture(
     assignments,
     gradebook,
     params = new URLSearchParams(),
+    outputPath,
+    pretty,
     ...oauthOptions
-  }: SingleOptions
+  }: SingleOptions & Partial<common.output.args.Parsed['outputOptions']>
 ) {
   const spinner = cli.spinner();
   spinner.start('Identifying section');
@@ -120,6 +124,19 @@ export async function capture(
     }
     snapshot.Metadata.Finish = new Date();
     await page.close();
+    if (outputPath) {
+      let basename = 'snapshot';
+      if (!isApiError(snapshot.SectionInfo)) {
+        basename = `${snapshot.SectionInfo.SchoolYear} - ${snapshot.SectionInfo.Teacher} - ${snapshot.SectionInfo.GroupName} - ${snapshot.SectionInfo.Id}`;
+      }
+      common.output.writeJSON(
+        await common.output.avoidOverwrite(
+          common.output.filePathFromOutputPath(outputPath, `${basename}.json`)
+        ),
+        snapshot,
+        { pretty }
+      );
+    }
     return snapshot;
   } else {
     spinner.fail('Unknown group ID');
@@ -128,21 +145,22 @@ export async function capture(
 }
 
 export async function captureAll(
-  page: Page,
+  parent: Page,
   {
     association,
     termsOffered,
     year,
     groupsPath,
+    outputPath,
     batchSize = 10,
     pretty,
     ...options
-  }: AllOptions
+  }: AllOptions & common.output.args.Parsed['outputOptions']
 ) {
   return new Promise<Data[]>(async (resolve) => {
     const _assoc = (association || '').split(',').map((t) => t.trim());
     const _terms = (termsOffered || '').split(',').map((t) => t.trim());
-    const groups = (await Groups.all(page, year)).filter(
+    const groups = (await Groups.all(parent, year)).filter(
       (group) =>
         (association === undefined || _assoc.includes(group.association)) &&
         (termsOffered === undefined ||
@@ -180,7 +198,7 @@ export async function captureAll(
 
       if (i < groups.length) {
         cli.log.debug(`Group ${i} of ${groups.length}`);
-        const snapshot = await capture(page, {
+        const snapshot = await capture(parent, {
           groupId: groups[i].lead_pk.toString(),
           ...options
         });
@@ -206,6 +224,13 @@ export async function captureAll(
           );
         }
         await fs.rm(TEMP, { recursive: true });
+        common.output.writeJSON(
+          await common.output.avoidOverwrite(
+            common.output.filePathFromOutputPath(outputPath, 'snapshot.json'),
+            common.output.AddTimestamp
+          ),
+          { pretty }
+        );
         resolve(data);
       }
     });

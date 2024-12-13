@@ -1,10 +1,10 @@
 import * as common from '../../../common.js';
-import { capture, captureAll } from '../Snapshot.js';
+import * as Snapshot from '../Snapshot.js';
 
 type Result = {
-  snapshotOptions: Parameters<typeof capture>[1];
+  snapshotOptions: Snapshot.SingleOptions;
   all: boolean;
-  allOptions: Parameters<typeof captureAll>[1];
+  allOptions: Snapshot.AllOptions;
 } & ReturnType<typeof common.args.parse> &
   ReturnType<typeof common.SkyAPI.args.parse>;
 

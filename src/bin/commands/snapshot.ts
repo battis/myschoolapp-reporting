@@ -26,64 +26,33 @@ import * as Snapshot from '../../workflows/Snapshot.js';
     snapshotOptions,
     all,
     allOptions,
-    outputOptions: { outputPath, pretty },
+    outputOptions,
     quit
   } = Snapshot.args.parse(values);
 
+  // TODO page creation should be abstracted away
   const page = await common.puppeteer.openURL(url!, puppeteerOptions);
   await common.puppeteer.login(page, loginCredentials);
   values.username = '';
   values.password = '';
 
-  let data;
-
   if (all) {
-    data = await Snapshot.captureAll(page, {
+    await Snapshot.captureAll(page, {
       ...snapshotOptions,
       ...allOptions,
-      ...skyApiOptons
+      ...skyApiOptons,
+      ...outputOptions
     });
   } else {
-    data = await Snapshot.capture(page, {
+    await Snapshot.capture(page, {
       url,
       ...snapshotOptions,
-      ...skyApiOptons
+      ...skyApiOptons,
+      ...outputOptions
     });
   }
 
   if (quit) {
     await page.browser().close();
-  }
-
-  if (!data) {
-    cli.log.warning('No data captured');
-  } else {
-    let timestamp = new Date();
-    let name = 'snapshot';
-    if (Array.isArray(data)) {
-      timestamp = data.reduce(
-        (last, snapshot) =>
-          last > snapshot.Metadata.Finish ? last : snapshot.Metadata.Finish,
-        data[0].Metadata.Finish
-      );
-    } else {
-      timestamp = data.Metadata.Finish;
-      if (Snapshot.isApiError(data.SectionInfo)) {
-        cli.log.warning(`Incomplete SectionInfo metadata captured`);
-      } else {
-        name = `${data.SectionInfo.GroupName} - ${data.SectionInfo.Identifier}`;
-        if (data.SectionInfo.Block) {
-          name = `${name} (${data.SectionInfo.Block})`;
-        }
-      }
-    }
-    common.output.writeJSON(
-      common.output.filePathFromOutputPath(
-        outputPath,
-        `${common.output.pathsafeTimestamp(timestamp)}-${name}.json`
-      ),
-      data,
-      { pretty }
-    );
   }
 })();
