@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
+import { api } from 'datadirect';
 import { Page } from 'puppeteer';
-import * as api from '../../Blackbaud/api.js';
 
 export async function all(page: Page, year?: string) {
   cli.log.debug(`Requesting list of all groups for ${year}`);

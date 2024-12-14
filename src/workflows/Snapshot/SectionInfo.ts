@@ -1,6 +1,6 @@
 import cli from '@battis/qui-cli';
+import { api } from 'datadirect';
 import { Page } from 'puppeteer';
-import * as api from '../../Blackbaud/api.js';
 
 export type Data = api.DataDirect.SectionInfo;
 

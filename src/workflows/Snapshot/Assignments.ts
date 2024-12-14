@@ -1,7 +1,6 @@
 import cli from '@battis/qui-cli';
+import { api, SKY } from 'datadirect';
 import { Page } from 'puppeteer';
-import * as api from '../../Blackbaud/api.js';
-import { AssignmentList } from '../../Blackbaud/SKY/Assignments.js';
 import * as common from '../../common.js';
 
 type Options = common.SkyAPI.args.Parsed['skyApiOptons'];
@@ -17,7 +16,7 @@ export async function capture(
 
   const assignmentList = (await common.SkyAPI.fetch(
     `school/v1/academics/sections/${groupId}/assignments`
-  )) as AssignmentList;
+  )) as SKY.AssignmentList;
 
   const assignments: api.Assignment2.Response[] = [];
   if (assignmentList.count > 0) {
