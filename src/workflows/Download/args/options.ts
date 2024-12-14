@@ -8,14 +8,14 @@ const defaultOutputPath = path.join(
 );
 
 export const options = {
-  ...common.args.options,
+  ...common.args.pickOptions({ SkyAPI: false }),
   outputPath: {
     ...common.args.options.outputPath,
-    description: `${common.args.options.outputPath.description} (defaults to timestamped export directory, ${cli.colors.quotedValue(`"${defaultOutputPath}"`)})`,
+    description: `${common.args.options.outputPath?.description} (defaults to the name of the snapshot file)`,
     default: defaultOutputPath
   },
   include: {
-    description: `Comma-separated list of regular expressions to match URLs to be included in download (e.g. ${cli.colors.quotedValue('"^\\/,example\\.com"')}, default ${cli.colors.quotedValue('"^\\/"')})`,
+    description: `Comma-separated list of regular expressions to match URLs to be included in download (e.g. ${cli.colors.quotedValue('"^\\/,example\\.com"')}, default ${cli.colors.quotedValue('"^\\/"')} to include only URLs on Blackbaud's servers)`,
     default: '^\\/'
   },
   exclude: {
