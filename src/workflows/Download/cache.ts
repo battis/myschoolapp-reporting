@@ -24,17 +24,21 @@ export async function get(
   url: string,
   downloader: () => Promise<Item>
 ): Promise<Item> {
-  if (url in cache) {
-    if (cache[url] === AWAITING) {
+  // FIXME it would be safer to strip just the known useless (e.g. `w`) queryparameters and empty query strings
+  const stripSearchParam = url.replace(/\?.*/, '');
+  if (stripSearchParam in cache) {
+    if (cache[stripSearchParam] === AWAITING) {
       return new Promise((resolve) => {
-        ready.on(url, () => resolve(cache[url] as Item));
+        ready.on(stripSearchParam, () =>
+          resolve(cache[stripSearchParam] as Item)
+        );
       });
     }
-    return cache[url];
+    return cache[stripSearchParam];
   } else {
-    cache[url] = AWAITING;
-    cache[url] = await downloader();
-    ready.emit(url);
-    return cache[url];
+    cache[stripSearchParam] = AWAITING;
+    cache[stripSearchParam] = await downloader();
+    ready.emit(stripSearchParam);
+    return cache[stripSearchParam];
   }
 }

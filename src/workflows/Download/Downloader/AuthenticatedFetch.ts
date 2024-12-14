@@ -29,6 +29,7 @@ export type Options = PrepareOptions & {
 };
 
 const TEMP = path.join('/tmp/msar/download', crypto.randomUUID());
+const DOWNLOADS = path.join(os.homedir(), 'Downloads');
 
 export class AuthenticatedFetch extends EventEmitter implements Strategy {
   private outputPath: string;
@@ -64,6 +65,7 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
     }
     const page = await this.parent.browser().newPage();
     const client = await page.createCDPSession();
+    let before: string[];
 
     await client.send('Fetch.enable', {
       patterns: [
@@ -103,6 +105,7 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       'Browser.downloadProgress',
       (async (downloadEvent: Protocol.Browser.DownloadProgressEvent) => {
         if (downloadEvent.state === 'completed') {
+          const after = fs.readdirSync(DOWNLOADS);
           const possiblePaths = this.filepathVariants({
             url,
             filename,
@@ -130,11 +133,39 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
                 return;
               }
             }
-            const error = cli.colors.error(
-              `Could not find ${cli.colors.url(url)} download`
-            );
-            cli.log.error(error);
-            this.emit(url, { error });
+            const ext = path.extname(localPath);
+            const possible = after
+              .filter((f) => !f.endsWith('.crdownload') && !f.startsWith('.'))
+              .filter((f) => !before.includes(f))
+              .filter(
+                (f) =>
+                  f.endsWith(ext) ||
+                  (/\.jpe?g$/i.test(localPath) && /\.jpe?g$/i.test(f))
+              );
+            if (possible.length === 0) {
+              throw new Error(
+                'No possible downloads, likely 404 redirect to HTML error page'
+              );
+            } else if (possible.length == 1) {
+              const possiblePath = path.join(DOWNLOADS, possible.shift()!);
+              fs.renameSync(possiblePath, destFilepath);
+              if (
+                filename === path.basename(localPath) &&
+                filename !== path.basename(possiblePath)
+              ) {
+                filename = path
+                  .basename(localPath)
+                  .replace(/( \(\d+\))(\.[^.]+)$/, '$2');
+              }
+              this.emit(url, { localPath, filename });
+              return;
+            } else {
+              cli.log.error(
+                `Could not identify ${cli.colors.url(url)} download: ${possible.map((p) => cli.colors.value(p)).join(', ')}`
+              );
+              this.emit(url, { error: possible });
+              return;
+            }
           } catch (error) {
             cli.log.error(`Download failed: ${cli.colors.error(error)}`);
             this.emit(url, { error });
@@ -149,6 +180,7 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       eventsEnabled: true
     });
 
+    before = fs.readdirSync(DOWNLOADS);
     return new Promise<DownloadData | DownloadError>((resolve) => {
       const listener = async (downloadData: DownloadData | DownloadError) => {
         this.removeListener(url, listener);
@@ -184,7 +216,6 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
 
   private filepathVariants({ url, filename, guid }: FilepathVariantsOptions) {
     // TODO configurable default Downloads directory
-    const downloadsDir = path.join(os.homedir(), 'Downloads');
     const urlFilename = path.basename(new URL(url).pathname);
     const filenameVariants: Record<string, string> = { urlFilename };
     if (filename) {
@@ -201,13 +232,18 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
           '.jpeg$1'
         );
       }
+      if (/\?+/.test(filenameVariants[key])) {
+        filenameVariants[`${key} Unicode encoding error`] = filenameVariants[
+          key
+        ].replace(/\?/g, '_');
+      }
     }
     const dirVariants: Record<string, string> = {
       tmp: path.join(TEMP, guid)
     };
     for (key in filenameVariants) {
       dirVariants[`download ${key}`] = path.join(
-        downloadsDir,
+        DOWNLOADS,
         filenameVariants[key]
       );
     }
