@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.4.0
+
+### Minor Changes
+
+- ae093fa: Improved reliability
+
 ## 0.3.3
 
 ### Patch Changes
