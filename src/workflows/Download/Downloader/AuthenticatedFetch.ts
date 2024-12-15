@@ -166,7 +166,9 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
               return;
             }
           } catch (error) {
-            cli.log.error(`Download failed: ${cli.colors.error(error)}`);
+            cli.log.error(
+              `Download ${cli.colors.url(url)} failed: ${cli.colors.error(error)}`
+            );
             this.emit(url, { error });
           }
         }

@@ -93,7 +93,11 @@ export class Spider {
               exclude,
               haltOnError
             });
-          } else if (/Url$/i.test(key)) {
+          } else if (
+            /Url$/i.test(key) ||
+            (/FilePath$/i.test(key) &&
+              !(snapshotComponent[key] as string).endsWith('/'))
+          ) {
             if (
               snapshotComponent[key] &&
               (!include ||
@@ -122,7 +126,9 @@ export class Spider {
                 if (haltOnError) {
                   throw error;
                 } else {
-                  const message = `Download failed: ${error}`;
+                  const message = `Download ${cli.colors.value(key)} ${cli.colors.url(
+                    snapshotComponent[key]
+                  )} failed: ${error}`;
                   cli.log.error(message);
                   (snapshotComponent[key] as Cache.Item) = {
                     original: snapshotComponent[key],
