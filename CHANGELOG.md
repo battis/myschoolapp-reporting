@@ -1,5 +1,14 @@
 # myschoolapp-reporting
 
+## 0.4.1
+
+### Patch Changes
+
+- 04a69ce: Download fixes
+
+  - Fix broken URL normalization in Cache
+  - Handle pre-2021 courses that store paths in *FilePath fields as well as/instead of *Url fields
+
 ## 0.4.0
 
 ### Minor Changes
