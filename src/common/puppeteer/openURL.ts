@@ -4,8 +4,7 @@ export async function openURL(
   url: string,
   options: Parameters<typeof puppeteer.launch>[0] = {
     headless: false,
-    defaultViewport: { height: 0, width: 0 },
-    devtools: true
+    defaultViewport: { height: 0, width: 0 }
     /*
     // theoeretically this should work, but it seems to have zero impact on actual behavior
     downloadBehavior: {
