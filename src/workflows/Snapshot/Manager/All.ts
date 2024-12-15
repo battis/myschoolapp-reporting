@@ -155,12 +155,9 @@ export async function capture(
         if (errors.length) {
           const errorsPath = filepath.replace(/\.json$/, '.errors.json');
           common.output.writeJSON(errorsPath, errors);
-          cli.log.error(
-            `Errors output to ${cli.colors.url(errorsPath)} and temporary files preserved in ${cli.colors.url(TEMP)}`
-          );
-        } else {
-          await fs.rm(TEMP, { recursive: true });
+          cli.log.error(`Errors output to ${cli.colors.url(errorsPath)}`);
         }
+        await fs.rm(TEMP, { recursive: true });
         progressBars.stop();
         resolve(data);
       }
