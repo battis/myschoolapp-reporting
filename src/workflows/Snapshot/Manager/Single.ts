@@ -1,5 +1,4 @@
 import cli from '@battis/qui-cli';
-import { Mutex } from 'async-mutex';
 import { Page } from 'puppeteer';
 import * as common from '../../../common.js';
 import * as Assignments from '../Assignments.js';
@@ -39,8 +38,6 @@ export type Options = BaseOptions & {
   groupId?: string;
 };
 
-const tabMutex = new Mutex();
-
 export async function capture(
   parent: Page,
   {
@@ -62,14 +59,13 @@ export async function capture(
   }
 
   if (groupId) {
-    await tabMutex.acquire();
     cli.log.debug(`Capturing section ID ${groupId}`);
     const page = await parent.browser().newPage();
     const hostUrl = new URL(url || parent.url());
-    tabMutex.release();
     await page.goto(
       `https://${hostUrl.host}/app/faculty#academicclass/${groupId}/0/bulletinboard`
     );
+
     const [s, b, t, g] = await Promise.all([
       SectionInfo.capture(page, groupId, ignoreErrors),
       bulletinBoard

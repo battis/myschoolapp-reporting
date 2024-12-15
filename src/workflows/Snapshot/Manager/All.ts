@@ -1,7 +1,7 @@
 import cli from '@battis/qui-cli';
 import cliProgress from 'cli-progress';
 import crypto from 'node:crypto';
-import events from 'node:events';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Page } from 'puppeteer';
@@ -10,8 +10,6 @@ import * as Groups from '../Groups.js';
 import * as args from '../args.js';
 import * as Single from './Single.js';
 
-const TEMP = path.join('/tmp/msar/snapshot', crypto.randomUUID());
-
 export type Options = Single.BaseOptions & {
   association?: string;
   termsOffered?: string;
@@ -19,6 +17,8 @@ export type Options = Single.BaseOptions & {
   batchSize?: number;
   groupsPath?: string;
 };
+
+const TEMP = path.join('/tmp/msar/snapshot', crypto.randomUUID());
 
 export async function capture(
   parent: Page,
@@ -69,8 +69,9 @@ export async function capture(
 
     let next = 0;
     let complete = 0;
-    const queue = new events.EventEmitter();
     const errors: typeof groups = [];
+    const queue = new EventEmitter();
+
     async function nextGroup() {
       const i = next;
       next += 1;
@@ -93,7 +94,7 @@ export async function capture(
         } catch (error) {
           if (ignoreErrors) {
             cli.log.error(cli.colors.error(error));
-            errors[i] = groups[i];
+            errors.push(groups[i]);
           } else {
             throw error;
           }
@@ -102,6 +103,7 @@ export async function capture(
         queue.emit('ready');
       }
     }
+
     queue.on('ready', async () => {
       complete += 1;
       nextGroup();
@@ -111,6 +113,7 @@ export async function capture(
     let Start = new Date();
     let Finish = new Date('1/1/1970');
     let first: Single.Metadata | undefined = undefined;
+
     queue.on('ready', async () => {
       if (complete === groups.length) {
         const partials = await fs.readdir(TEMP);
