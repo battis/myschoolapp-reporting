@@ -1,3 +1,4 @@
+import cli from '@battis/qui-cli';
 import { EventEmitter } from 'node:events';
 
 export type DownloadData = {
@@ -24,21 +25,33 @@ export async function get(
   url: string,
   downloader: () => Promise<Item>
 ): Promise<Item> {
-  // FIXME it would be safer to strip just the known useless (e.g. `w`) queryparameters and empty query strings
-  const stripSearchParam = url.replace(/\?.*/, '');
-  if (stripSearchParam in cache) {
-    if (cache[stripSearchParam] === AWAITING) {
+  url = normalizeURL(url);
+  if (url in cache) {
+    if (cache[url] === AWAITING) {
       return new Promise((resolve) => {
-        ready.on(stripSearchParam, () =>
-          resolve(cache[stripSearchParam] as Item)
-        );
+        ready.on(url, () => resolve(cache[url] as Item));
       });
     }
-    return cache[stripSearchParam];
+    return cache[url] as Item;
   } else {
-    cache[stripSearchParam] = AWAITING;
-    cache[stripSearchParam] = await downloader();
-    ready.emit(stripSearchParam);
-    return cache[stripSearchParam];
+    cache[url] = AWAITING;
+    cache[url] = await downloader();
+    ready.emit(url);
+    return cache[url] as Item;
   }
+}
+
+function normalizeURL(url: string) {
+  const u = new URL(url);
+  if (/\.myschool(app|cdn)\.com$/.test(u.hostname)) {
+    u.searchParams.delete('w');
+    u.searchParams.delete('h');
+  }
+  const normalized = u.toString().replace(/\?[^#]+/, '');
+  if (normalized !== url) {
+    cli.log.debug(
+      `${cli.colors.url(url)} normalized to ${cli.colors.url(normalized)}`
+    );
+  }
+  return normalized;
 }
