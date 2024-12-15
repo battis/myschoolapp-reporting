@@ -84,12 +84,10 @@ export async function capture(
             ignoreErrors,
             ...options
           });
-          await common.output.writeJSON(
-            path.join(TEMP, `${pad(i)}.json`),
-            snapshot
-          );
+          const tempPath = path.join(TEMP, `${pad(i)}.json`);
+          await common.output.writeJSON(tempPath, snapshot);
           progressBars.log(
-            `${snapshot?.SectionInfo?.SchoolYear} / ${snapshot?.SectionInfo?.Teacher} / ${snapshot?.SectionInfo?.GroupName} / ${snapshot?.SectionInfo?.Block}\n`
+            `Wrote snapshot ${snapshot?.SectionInfo?.Teacher}'s ${snapshot?.SectionInfo?.SchoolYear} ${snapshot?.SectionInfo?.GroupName} ${snapshot?.SectionInfo?.Block} to ${cli.colors.url(tempPath)}\n`
           );
         } catch (error) {
           if (ignoreErrors) {

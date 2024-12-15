@@ -42,12 +42,9 @@ export async function get(
 }
 
 function normalizeURL(url: string) {
-  const u = new URL(url);
-  if (/\.myschool(app|cdn)\.com$/.test(u.hostname)) {
-    u.searchParams.delete('w');
-    u.searchParams.delete('h');
-  }
-  const normalized = u.toString().replace(/\?[^#]+/, '');
+  const normalized = url
+    .replace(/^(\/.+\?.*)(w|h)=\dpx&?(.*)$/, '$1$3')
+    .replace(/\?$/, '');
   if (normalized !== url) {
     cli.log.debug(
       `${cli.colors.url(url)} normalized to ${cli.colors.url(normalized)}`
