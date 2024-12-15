@@ -54,7 +54,12 @@ export async function capture(
         )
       ) {
         const response = request.response();
-        assignments.push(await response?.json());
+        // TODO test try-catch and apply to _all_ DataDirect API requests
+        try {
+          assignments.push(await response?.json());
+        } catch (error) {
+          cli.log.error({ error, response: response?.content() });
+        }
         complete = true;
       }
     });
