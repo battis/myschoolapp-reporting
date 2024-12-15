@@ -1,5 +1,11 @@
 # myschoolapp-reporting
 
+## 0.4.2
+
+### Patch Changes
+
+- 876809c: Fix normalize (again)
+
 ## 0.4.1
 
 ### Patch Changes
