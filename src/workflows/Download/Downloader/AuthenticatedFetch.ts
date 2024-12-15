@@ -65,7 +65,6 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
     }
     const page = await this.parent.browser().newPage();
     const client = await page.createCDPSession();
-    let before: string[];
 
     await client.send('Fetch.enable', {
       patterns: [
@@ -180,7 +179,7 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
       eventsEnabled: true
     });
 
-    before = fs.readdirSync(DOWNLOADS);
+    const before = fs.readdirSync(DOWNLOADS);
     return new Promise<DownloadData | DownloadError>((resolve) => {
       const listener = async (downloadData: DownloadData | DownloadError) => {
         this.removeListener(url, listener);
@@ -251,6 +250,10 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
   }
 
   public async quit() {
+    if (this.preparing.isLocked()) {
+      await this.preparing.acquire();
+      this.preparing.release();
+    }
     await this.parent.browser().close();
   }
 }
