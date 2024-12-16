@@ -1,4 +1,5 @@
 import cli from '@battis/qui-cli';
+import cliProgress from 'cli-progress';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as common from '../../common.js';
@@ -69,7 +70,12 @@ import * as Snapshot from '../../workflows/Snapshot.js';
   });
   const indices: (string | undefined)[] = [];
 
+  const progress = new cliProgress.MultiBar({});
+  const bar = progress.create(snapshots.length, 0);
   for (const snapshot of snapshots) {
+    progress.log(
+      `Downloading ${snapshot.SectionInfo?.Teacher}'s ${snapshot.SectionInfo?.SchoolYear} ${snapshot.SectionInfo?.GroupName} ${snapshot.SectionInfo?.Block}`
+    );
     indices.push(
       await spider.download(snapshot, {
         ...downloadOptions,
@@ -78,7 +84,9 @@ import * as Snapshot from '../../workflows/Snapshot.js';
         pretty
       })
     );
+    bar.increment();
   }
+  bar.stop();
 
   const index = [];
   for (const fileName of indices) {

@@ -114,14 +114,17 @@ export class Spider {
                 ))
             ) {
               try {
-                (snapshotComponent[key] as Cache.Item) =
-                  await this.downloader.download(
-                    snapshotComponent[key],
-                    'FriendlyFileName' in snapshotComponent &&
-                      typeof snapshotComponent['FriendlyFileName'] === 'string'
-                      ? snapshotComponent['FriendlyFileName']
-                      : undefined
-                  );
+                const item = await this.downloader.download(
+                  snapshotComponent[key],
+                  'FriendlyFileName' in snapshotComponent &&
+                    typeof snapshotComponent['FriendlyFileName'] === 'string'
+                    ? snapshotComponent['FriendlyFileName']
+                    : undefined
+                );
+                (snapshotComponent[key] as Cache.Item) = item;
+                cli.log.debug(
+                  `${pathToComponent}[${key}]: ${item.localPath || item.error}`
+                );
               } catch (error) {
                 if (haltOnError) {
                   throw error;
