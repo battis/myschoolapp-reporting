@@ -31,8 +31,8 @@ export const options = {
     description: `Comma-separated list of terms to include if ${cli.colors.value('--all')} flag is used`
   },
   batchSize: {
-    description: `Number of simultaneous requests to batch together (default: ${cli.colors.value(20)})`,
-    default: '20'
+    description: `Number of simultaneous requests to batch together (default: ${cli.colors.value(10)})`,
+    default: '10'
   },
   groupsPath: {
     description: `Path to output directory or file to save filtered groups listing (include placeholder ${cli.colors.quotedValue('"%TIMESTAMP%"')} to specify its location, otherwise it is added automatically when needed to avoid overwriting existing files)`

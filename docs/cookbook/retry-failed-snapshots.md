@@ -10,8 +10,7 @@ If any snapshots fail, in addition to your expected `snapshot.json` file there w
 
 ```sh
 jq -r '.[].lead_pk' "snapshot.errors.json" | xargs -I % npx msar snapshot ...args... "https://example.myschoolapp.com/app/faculty#academicclass/%/0/bulletinboard"
-cp snapshot.json snapshot.bak.json
-find . -name <pattern> -exec jq '. + [ inputs ]' snapshot.json {} + > snapshot.json
+find . -name <pattern> -exec jq '. + [ inputs ]' snapshot.json {} + > snapshot.merged.json
 ```
 
 …where `<pattern>` matches the individual snapshot filenames. For example, if I had create a bunch of snapshots from 2021-2022, the pattern might be `'2021 - 2022*[0-9].json'` that is: capturing all the files that start with that year, and that end with a Group ID number before the `.json` file extension (excluding the `*.metadata.json` files that might also be present).
@@ -28,15 +27,11 @@ Extract the list of group ID numbers from `snapshot.errors.json`…
 …and take a snapshot (with the same options as before) but _without_ the `--all` flag (i.e. snapshotting a single course) for which we are building the URL.
 
 Then…
-`cp snapshot.json snapshot.bak.json`
-Make a backup of our original snapshot, in case we botch something when we overwrite it.
-
-Then…
 `find . -name <pattern>`
 Find all the snapshot files matching a pattern (see above)…
 
 `-exec jq '. + [ inputs ]' snapshot.json {} +`
 Execute the `jq` command passing in all of those file names as additional arguments (`{} +`), and add each of the individual snapshots to the main snapshot list…
 
-`> snapshot.json`
-…writing the updated snapshot list to our `snapshot.json` file.
+`> snapshot.merged.json`
+…writing the updated snapshot list to our `snapshot.merged.json` file (do not overwrite the existing `snapshot.json` file, as it is being processed by jq as it is being written).
