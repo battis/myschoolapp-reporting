@@ -157,13 +157,36 @@ export class AuthenticatedFetch extends EventEmitter implements Strategy {
                   .replace(/( \(\d+\))(\.[^.]+)$/, '$2');
               }
               this.emit(url, { localPath, filename });
-              return;
             } else {
-              cli.log.error(
-                `Could not identify ${cli.colors.url(url)} download: ${possible.map((p) => cli.colors.value(p)).join(', ')}`
+              // TODO reduce copy-pasta in favor of reusable functions
+              setTimeout(
+                (() => {
+                  const next = fs.readdirSync(DOWNLOADS);
+                  const lastResort = possible.filter((f) => next.includes(f));
+                  if (lastResort.length === 1) {
+                    const possiblePath = path.join(
+                      DOWNLOADS,
+                      lastResort.shift()!
+                    );
+                    fs.renameSync(possiblePath, destFilepath);
+                    if (
+                      filename === path.basename(localPath) &&
+                      filename !== path.basename(possiblePath)
+                    ) {
+                      filename = path
+                        .basename(localPath)
+                        .replace(/( \(\d+\))(\.[^.]+)$/, '$2');
+                    }
+                    this.emit(url, { localPath, filename });
+                  } else {
+                    cli.log.error(
+                      `Could not identify ${cli.colors.url(url)} download: ${lastResort.map((p) => cli.colors.value(p)).join(', ')}`
+                    );
+                    this.emit(url, { error: lastResort });
+                  }
+                }).bind(this),
+                1000
               );
-              this.emit(url, { error: possible });
-              return;
             }
           } catch (error) {
             cli.log.error(
